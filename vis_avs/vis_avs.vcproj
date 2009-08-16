@@ -4,6 +4,7 @@
 	Version="9.00"
 	Name="vis_avs"
 	ProjectGUID="{F758C3EF-67AE-4396-AF9D-A5DC9A02FB5D}"
+	RootNamespace="vis_avs"
 	TargetFrameworkVersion="0"
 	>
 	<Platforms>
@@ -75,7 +76,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="odbc32.lib odbccp32.lib ddraw.lib vfw32.lib"
-				OutputFile="vis_avs.dll"
+				OutputFile="$(OutDir)\vis_avs.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				ProgramDatabaseFile=".\vis_avs___Win32_NoMMX_Release/vis_avs.pdb"
@@ -171,7 +172,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="odbc32.lib odbccp32.lib ddraw.lib vfw32.lib"
-				OutputFile="vis_avs.dll"
+				OutputFile="$(OutDir)\vis_avs.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				ProgramDatabaseFile=".\Release/vis_avs.pdb"
@@ -267,7 +268,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="odbc32.lib odbccp32.lib ddraw.lib vfw32.lib"
-				OutputFile="vis_avs.dll"
+				OutputFile="$(OutDir)\vis_avs.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				ProgramDatabaseFile=".\vis_avs___Win32_Laser_Release/vis_avs_laser.pdb"
@@ -361,7 +362,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="odbc32.lib odbccp32.lib ddraw.lib vfw32.lib"
-				OutputFile="vis_avs.dll"
+				OutputFile="$(OutDir)\vis_avs.dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
 				GenerateDebugInformation="true"
