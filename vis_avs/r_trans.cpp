@@ -298,7 +298,7 @@ int C_THISCLASS::smp_begin(int max_threads, char visdata[2][2][576], int isBeat,
   {
     int p;
     int *transp,x;
-    if (trans_tab) GlobalFree(trans_tab);
+    //if (trans_tab) GlobalFree(trans_tab);
     trans_tab_w=w; 
     trans_tab_h=h;
     trans_tab=(int*)GlobalAlloc(GMEM_FIXED,trans_tab_w*trans_tab_h*sizeof(int));
