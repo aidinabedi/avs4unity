@@ -394,7 +394,7 @@ if (thisLen < Avg/2 - Avg*0.2)
 
 if (learning) 
   for (offI=2;offI<offIMax;offI++) // Try to see if this beat is in the middle of our current Bpm, or maybe 1/3, 1/4 etc... to offIMax
-	if ((float)abs((int) ((Avg/offI)-thisLen)) < (float)(Avg/offI)*0.2)
+	if ((float)abs((float) ((Avg/offI)-thisLen)) < (float)(Avg/offI)*0.2)
 		{
 		_halfDiscriminated[(*_hdPos)++]=1; // Should test if offI==2 before doing that, but seems to have better results ? I'll have to investigate this
 		(*_hdPos)%=8;
