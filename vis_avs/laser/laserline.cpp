@@ -103,7 +103,7 @@ void LineDrawList(C_LineListBase *list, int *fb, int w, int h)
       y2=(int) (ll->y2 * h2) + h2;
       if (ll->mode==0)
       {
-        line(fb,x1,y1,x2,y2,w,h,ll->color);
+        line(fb,x1,y1,x2,y2,w,h,ll->color, 1);
       }
       else 
       {
@@ -155,8 +155,8 @@ void LineDrawList(C_LineListBase *list, int *fb, int w, int h)
         }
         else if (cp>1 && d.points[cp-1].RGBValue)
         {
-          double a1=atan2(d.points[cp-2].XCoord-x2,d.points[cp-2].YCoord-y2);
-          double a2=atan2(x2-x1,y2-y1);
+          double a1=atan2((double) (d.points[cp-2].XCoord-x2),(double) (d.points[cp-2].YCoord-y2));
+          double a2=atan2((double) (x2-x1),(double) (y2-y1));
           if (fabs(a1-a2) >= 1.0*3.14159/180.0)
           {
             d.points[cp-1].Status=4096;

@@ -621,7 +621,7 @@ void Wnd_Quit(void)
 	{
 #ifdef LASER
     extern int g_laser_zones,g_laser_nomessage;
-    wsprintf(str,"%d",g_laser_zones);
+    //wsprintf(str,"%d",g_laser_zones);
 		WriteInt("laser_zones",g_laser_zones);
 		WriteInt("laser_nomessage",g_laser_nomessage);
 #else
