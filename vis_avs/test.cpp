@@ -1,77 +1,68 @@
 #include <windows.h>
+#include <stdio.h>
+#include <time.h>
+#include <conio.h>
 
-const char g_szClassName[] = "myWindowClass";
+#include "vis.h"
+#pragma comment(lib, "vis_avs.lib")
 
-// Step 4: the Window Procedure
-LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
-{
-    switch(msg)
-    {
-        case WM_CLOSE:
-            DestroyWindow(hwnd);
-        break;
-        case WM_DESTROY:
-            PostQuitMessage(0);
-        break;
-        default:
-            return DefWindowProc(hwnd, msg, wParam, lParam);
-    }
-    return 0;
+extern "C" {
+	__declspec( dllexport ) winampVisHeader* winampVisGetHeader();
 }
+//typedef winampVisHeader* (*winampVisGetHeader)();
 
 int main()
-{
-	HINSTANCE hInstance = GetModuleHandle(NULL);
-    int nCmdShow = SW_SHOW;
-    WNDCLASSEX wc;
-    HWND hwnd;
-    MSG Msg;
+{ 
+	/*
+	HINSTANCE hDll;
+	hDll = LoadLibrary("vis_avs.dll");
+	if (!hDll) {
+		printf("dll not found\n");
+		return 0;
+	}
 
-    //Step 1: Registering the Window Class
-    wc.cbSize        = sizeof(WNDCLASSEX);
-    wc.style         = 0;
-    wc.lpfnWndProc   = WndProc;
-    wc.cbClsExtra    = 0;
-    wc.cbWndExtra    = 0;
-    wc.hInstance     = hInstance;
-    wc.hIcon         = LoadIcon(NULL, IDI_APPLICATION);
-    wc.hCursor       = LoadCursor(NULL, IDC_ARROW);
-    wc.hbrBackground = (HBRUSH)(COLOR_WINDOW+1);
-    wc.lpszMenuName  = NULL;
-    wc.lpszClassName = g_szClassName;
-    wc.hIconSm       = LoadIcon(NULL, IDI_APPLICATION);
+	winampVisGetHeader getHeader = (winampVisGetHeader) GetProcAddress(hDll , "winampVisGetHeader");
+	*/
 
-    if(!RegisterClassEx(&wc))
+	printf("mod->Init(...)\n");
+	winampVisHeader *vis = winampVisGetHeader();
+	winampVisModule *mod = vis->getModule(0);
+	mod->hwndParent = NULL;
+	mod->hDllInstance = GetModuleHandle(NULL);
+	mod->sRate = 44100;
+	mod->nCh = 2;
+	mod->spectrumNch = 2;
+	mod->waveformNch = 2;
+
+	printf("for ...\n");
+	int x, y;
+    for (x = 0; x < 2; x++)
     {
-        MessageBox(NULL, "Window Registration Failed!", "Error!",
-            MB_ICONEXCLAMATION | MB_OK);
-        return 0;
+		for (y = 0; y < 576; y++)
+		{
+				mod->spectrumData[x][y] = 0;
+				mod->waveformData[x][y] = 0;
+		}
     }
 
-    // Step 2: Creating the Window
-    hwnd = CreateWindowEx(
-        WS_EX_CLIENTEDGE,
-        g_szClassName,
-        "The title of my window",
-        WS_OVERLAPPEDWINDOW,
-        CW_USEDEFAULT, CW_USEDEFAULT, 240, 120,
-        NULL, NULL, hInstance, NULL);
+	mod->Init(mod);
 
-    if(hwnd == NULL)
-    {
-        MessageBox(NULL, "Window Creation Failed!", "Error!",
-            MB_ICONEXCLAMATION | MB_OK);
-        return 0;
-    }
-
-    ShowWindow(hwnd, nCmdShow);
-    UpdateWindow(hwnd);
-
+	printf("loop ...\n");
     // Step 3: The Message Loop
-    while(GetMessage(&Msg, NULL, 0, 0) > 0)
-    {
-        TranslateMessage(&Msg);
-        DispatchMessage(&Msg);
-    }
-    return Msg.wParam;
+	MSG msg;
+	while (kbhit() == 0)
+	{
+		while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
+		{
+			if (msg.message == WM_QUIT) return TRUE;
+			TranslateMessage(&msg);
+			DispatchMessage(&msg);
+		}
+
+		Sleep(mod->delayMs);
+		//mod->Render(mod);
+	}
+
+	//FreeLibrary(hDll);
+	return 0;
 }

@@ -46,6 +46,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "../studio/studio/api.h"
 #endif
 
+#include "debug.h"
 #include "avs_eelif.h"
 
 extern void GetClientRect_adj(HWND hwnd, RECT *r);
@@ -142,6 +143,7 @@ BOOL CALLBACK aboutProc(HWND hwndDlg, UINT uMsg, WPARAM wParam,LPARAM lParam)
 
 static void config(struct winampVisModule *this_mod)
 {
+	this_mod->hwndParent = NULL;
   if (!g_hwnd || !IsWindow(g_hwnd))
   {
     DialogBox(this_mod->hDllInstance,MAKEINTRESOURCE(IDD_DIALOG2),this_mod->hwndParent,aboutProc);
@@ -180,6 +182,7 @@ HINSTANCE hRich;
 
 static int init(struct winampVisModule *this_mod)
 {
+	this_mod->hwndParent = NULL;
 	DWORD id;
   FILETIME ft;
 #if 0//syntax highlighting
@@ -251,7 +254,7 @@ static int init(struct winampVisModule *this_mod)
 
   initBpm();
 
-	Render_Init(g_hInstance);
+	Render_Init(g_hInstance, (const char*) this_mod->userData);
 
 	CfgWnd_Create(this_mod);
 
@@ -265,6 +268,17 @@ static int init(struct winampVisModule *this_mod)
 
 static int render(struct winampVisModule *this_mod)
 {
+	this_mod->hwndParent = NULL;
+	int i, j;
+    for (i = 0; i < 2; i++)
+    {
+		for (j = 0; j < 576; j++)
+		{
+				debug("this_mod->spectrumData[%d][%d] = %d;\n", i, j, this_mod->spectrumData[i][j]);
+				debug("this_mod->waveformData[%d][%d] = %d;\n", i, j, this_mod->waveformData[i][j]);
+		}
+    }
+
 #ifndef WA3_COMPONENT
 	int x,avs_beat=0,b;
 	if (g_ThreadQuit) return 1;
@@ -335,6 +349,7 @@ static int render(struct winampVisModule *this_mod)
 
 static void quit(struct winampVisModule *this_mod)
 {
+	this_mod->hwndParent = NULL;
 #define DS(x) 
   //MessageBox(this_mod->hwndParent,x,"AVS Debug",MB_OK)
 	if (g_hThread)
@@ -353,7 +368,7 @@ static void quit(struct winampVisModule *this_mod)
     DS("Calling cfgwnd_destroy\n");
 		CfgWnd_Destroy();
     DS("Calling render_quit\n");
-		Render_Quit(this_mod->hDllInstance);
+		Render_Quit(this_mod->hDllInstance, (const char*) this_mod->userData);
 
     DS("Calling wnd_quit\n");
 		Wnd_Quit();
