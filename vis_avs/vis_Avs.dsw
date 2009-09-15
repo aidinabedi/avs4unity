@@ -11,6 +11,9 @@ Package=<5>
 
 Package=<4>
 {{{
+    Begin Project Dependency
+    Project_Dep_Name vis_avs
+    End Project Dependency
 }}}
 
 ###############################################################################

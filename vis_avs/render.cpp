@@ -33,6 +33,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "undo.h"
 #include "wnd.h"
 #include "wa_ipc.h"
+#include "debug.h"
 
 #ifdef LASER
 C_LineListBase *g_laser_linelist;
@@ -65,7 +66,7 @@ unsigned int const mmx_blend4_revn[2]={0xff00ff,0xff00ff};//{0x1000100,0x1000100
 int const mmx_blendadj_mask[2] = { 0xff00ff,0xff00ff};
 int const mmx_blend4_zero=0;
 
-void Render_Init(HINSTANCE hDllInstance)
+void Render_Init(HINSTANCE hDllInstance, const char* path)
 {
 #ifdef LASER
   laser_connect();
@@ -86,7 +87,13 @@ void Render_Init(HINSTANCE hDllInstance)
 
 	char INI_FILE[MAX_PATH];
 	char *p=INI_FILE;
-	strncpy(INI_FILE,(char*)SendMessage(GetWinampHwnd(),WM_WA_IPC,0,IPC_GETINIFILE),MAX_PATH);
+#ifndef AVS2UNITY
+	//debug("IPC_GETINIFILE: %s\n", (char*)SendMessage(GetWinampHwnd(),WM_WA_IPC,0,IPC_GETINIFILE));
+	//strncpy(INI_FILE,(char*)SendMessage(GetWinampHwnd(),WM_WA_IPC,0,IPC_GETINIFILE),MAX_PATH);
+	strncpy(INI_FILE, "C:\\Users\\aidin\\AppData\\Roaming\\Winamp\\Winamp.ini", MAX_PATH);
+#else
+	strncpy(INI_FILE, path, MAX_PATH);
+#endif
 	p += strlen(INI_FILE) - 1;
 	while (p >= INI_FILE && *p != '\\') p--;
 #ifdef LASER
@@ -106,7 +113,7 @@ void Render_Init(HINSTANCE hDllInstance)
   }
 }
 
-void Render_Quit(HINSTANCE hDllInstance)
+void Render_Quit(HINSTANCE hDllInstance, const char* path)
 {
   if (g_render_transition) delete g_render_transition;
   g_render_transition=NULL;
@@ -114,7 +121,12 @@ void Render_Quit(HINSTANCE hDllInstance)
   {
 		char INI_FILE[MAX_PATH];
 		char *p=INI_FILE;
-		strncpy(INI_FILE,(char*)SendMessage(GetWinampHwnd(),WM_WA_IPC,0,IPC_GETINIFILE),MAX_PATH);
+#ifndef AVS2UNITY
+		//strncpy(INI_FILE,(char*)SendMessage(GetWinampHwnd(),WM_WA_IPC,0,IPC_GETINIFILE),MAX_PATH);
+		strncpy(INI_FILE, "C:\\Users\\aidin\\AppData\\Roaming\\Winamp\\Winamp.ini", MAX_PATH);
+#else
+		strncpy(INI_FILE, path, MAX_PATH);
+#endif
 		p += strlen(INI_FILE) - 1;
 		while (p >= INI_FILE && *p != '\\') p--;
   #ifdef LASER
