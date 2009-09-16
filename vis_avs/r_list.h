@@ -143,8 +143,8 @@ class C_RenderListClass : public C_RBASE {
     void clearRenders(void);
     void freeBuffers();
 
-    int __SavePreset(char *filename);
-    int __LoadPreset(char *filename, int clear);
+    int __SavePreset(const char *filename);
+    int __LoadPreset(const char *filename, int clear);
 
     int __SavePresetToUndo(C_UndoItem &item);
     int __LoadPresetFromUndo(C_UndoItem &item, int clear);

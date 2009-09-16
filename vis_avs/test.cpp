@@ -33,6 +33,7 @@ int main()
 	mod->nCh = 2;
 	mod->spectrumNch = 2;
 	mod->waveformNch = 2;
+	mod->userData = NULL;
 
 	printf("for ...\n");
 	int x, y;

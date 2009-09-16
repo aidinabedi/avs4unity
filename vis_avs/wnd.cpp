@@ -39,6 +39,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "render.h"
 #include "undo.h"
 #include <multimon.h>
+#include <string>
 
 #include "avs_eelif.h"
 #include "debug.h"
@@ -421,8 +422,8 @@ void Wnd_GoFullScreen(HWND hwnd)
 }
 
 int g_config_smp_mt=2,g_config_smp=0;
-//static char *INI_FILE;
-static char INI_FILE[MAX_PATH];
+static const char *INI_FILE;
+static std::string INI_FILE_BUF;
 
 static LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
 
@@ -459,33 +460,10 @@ int Wnd_Init(struct winampVisModule *this_mod)
 		*++p='i';
 		*++p=0;
 #else
-#ifndef AVS2UNITY
-	//strncpy(INI_FILE,(char*)SendMessage(GetWinampHwnd(),WM_WA_IPC,0,IPC_GETINIFILE),MAX_PATH);
-	strncpy(INI_FILE, "C:\\Users\\aidin\\AppData\\Roaming\\Winamp\\Winamp.ini", MAX_PATH);
-/*
-  HWND hwndParent;   // parent window (filled in by calling app)
-  HINSTANCE hDllInstance; // instance handle to this DLL (filled in by calling app)
-  int sRate;		 // sample rate (filled in by calling app)
-  int nCh;			 // number of channels (filled in...)
-  int latencyMs;     // latency from call of RenderFrame to actual drawing
-                     // (calling app looks at this value when getting data)
-  int delayMs;       // delay between calls in ms
-
-  // the data is filled in according to the respective Nch entry
-  int spectrumNch;
-  int waveformNch;
-  unsigned char spectrumData[2][576];
-  unsigned char waveformData[2][576];
-*/
-	debug("this_mod->hwndParent = %u\n", this_mod->hwndParent);
-	debug("this_mod->hDllInstance = %u\n", this_mod->hDllInstance);
-	debug("this_mod->sRate = %d\n", this_mod->sRate);
-	debug("this_mod->nCh = %d\n", this_mod->nCh);
-	debug("this_mod->spectrumNch = %d\n", this_mod->spectrumNch);
-	debug("this_mod->waveformNch = %d\n", this_mod->waveformNch);
-#else
-	strncpy(INI_FILE, (const char*) this_mod->userData, MAX_PATH);
-#endif
+	const char* path = (const char*) this_mod->userData;
+	if (path) INI_FILE_BUF = path;
+	INI_FILE_BUF += "winamp.ini";
+	INI_FILE = INI_FILE_BUF.c_str();
 #endif
 #define AVS_SECTION "AVS"
 #ifdef LASER
