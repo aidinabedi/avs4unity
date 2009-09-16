@@ -34,6 +34,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "wnd.h"
 #include "wa_ipc.h"
 #include "debug.h"
+#include <string>
 
 #ifdef LASER
 C_LineListBase *g_laser_linelist;
@@ -85,26 +86,16 @@ void Render_Init(HINSTANCE hDllInstance, const char* path)
   g_render_effects2=new C_RenderListClass(1);
   g_render_transition=new C_RenderTransitionClass();
 
-	char INI_FILE[MAX_PATH];
-	char *p=INI_FILE;
-#ifndef AVS2UNITY
-	//debug("IPC_GETINIFILE: %s\n", (char*)SendMessage(GetWinampHwnd(),WM_WA_IPC,0,IPC_GETINIFILE));
-	//strncpy(INI_FILE,(char*)SendMessage(GetWinampHwnd(),WM_WA_IPC,0,IPC_GETINIFILE),MAX_PATH);
-	strncpy(INI_FILE, "C:\\Users\\aidin\\AppData\\Roaming\\Winamp\\Winamp.ini", MAX_PATH);
-#else
-	strncpy(INI_FILE, path, MAX_PATH);
-#endif
-	p += strlen(INI_FILE) - 1;
-	while (p >= INI_FILE && *p != '\\') p--;
+  std::string file = path? path:"";
 #ifdef LASER
-	strcpy(p,"\\plugins\\vis_avs_laser.dat");
+  file += "vis_avs_laser.dat";
 #else
-	strcpy(p,"\\plugins\\vis_avs.dat");
+  file += "vis_avs.dat";
 #endif
   extern int g_saved_preset_dirty;
   // clear the undo stack before loading a file.
   C_UndoStack::clear();
-  g_render_effects->__LoadPreset(INI_FILE,1);
+  g_render_effects->__LoadPreset(file.c_str(),1);
   // then add the new load to the undo stack but mark it clean if it is supposed to be
   C_UndoStack::saveundo();
   if (!g_saved_preset_dirty)
@@ -119,23 +110,14 @@ void Render_Quit(HINSTANCE hDllInstance, const char* path)
   g_render_transition=NULL;
 	if (g_render_effects)
   {
-		char INI_FILE[MAX_PATH];
-		char *p=INI_FILE;
-#ifndef AVS2UNITY
-		//strncpy(INI_FILE,(char*)SendMessage(GetWinampHwnd(),WM_WA_IPC,0,IPC_GETINIFILE),MAX_PATH);
-		strncpy(INI_FILE, "C:\\Users\\aidin\\AppData\\Roaming\\Winamp\\Winamp.ini", MAX_PATH);
+		std::string file = path? path:"";
+#ifdef LASER
+		file += "vis_avs_laser.dat";
 #else
-		strncpy(INI_FILE, path, MAX_PATH);
+		file += "vis_avs.dat";
 #endif
-		p += strlen(INI_FILE) - 1;
-		while (p >= INI_FILE && *p != '\\') p--;
-  #ifdef LASER
-	  strcpy(p,"\\plugins\\vis_avs_laser.dat");
-  #else
-	  strcpy(p,"\\plugins\\vis_avs.dat");
-  #endif
 
-    g_render_effects->__SavePreset(INI_FILE);
+    g_render_effects->__SavePreset(file.c_str());
 	}
 
   if (g_render_effects) delete g_render_effects;

@@ -1215,7 +1215,7 @@ HWND C_RenderListClass::conf(HINSTANCE hInstance, HWND hwndParent)
 
 char C_RenderListClass::sig_str[] = "Nullsoft AVS Preset 0.2\x1a";
 
-int C_RenderListClass::__SavePreset(char *filename)
+int C_RenderListClass::__SavePreset(const char *filename)
 {
   EnterCriticalSection(&g_render_cs);
 	unsigned char *data = (unsigned char *) GlobalAlloc(GPTR,1124*1024);
@@ -1244,7 +1244,7 @@ int C_RenderListClass::__SavePreset(char *filename)
 	return success;
 }
 
-int C_RenderListClass::__LoadPreset(char *filename, int clear)
+int C_RenderListClass::__LoadPreset(const char *filename, int clear)
 {
   EnterCriticalSection(&g_render_cs);
 	unsigned char *data = (unsigned char *) GlobalAlloc(GPTR,1024*1024);
