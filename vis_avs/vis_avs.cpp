@@ -143,7 +143,7 @@ int avs_init(struct winampVisModule *this_mod)
 
 	Render_Init(g_hInstance, (const char*) this_mod->userData);
 
-	CfgWnd_Create(this_mod);
+	//CfgWnd_Create(this_mod);
 
 	//g_hThread=(HANDLE)_beginthreadex(NULL,0,RenderThread,0,0,(unsigned int *)&id);
   //main_setRenderThreadPriority();
@@ -272,8 +272,8 @@ void avs_quit(struct winampVisModule *this_mod)
     DS("Calling ddraw_quit\n");
 		DDraw_Quit();
 
-    DS("Calling cfgwnd_destroy\n");
-		CfgWnd_Destroy();
+    //DS("Calling cfgwnd_destroy\n");
+		//CfgWnd_Destroy();
     DS("Calling render_quit\n");
 		Render_Quit(this_mod->hDllInstance, (const char*) this_mod->userData);
 
@@ -324,68 +324,3 @@ void quit3(void)
   quit(&dummyMod);
 }
 #endif
-
-#define FPS_NF 64
-
-static unsigned int WINAPI RenderThread(LPVOID a)
-{
-  int framedata[FPS_NF]={0,};
-	int framedata_pos=0;
-  int s=0;
-	char vis_data[2][2][576];
-
-	//while (!g_ThreadQuit)
-	{
-		int w,h,*fb=NULL, *fb2=NULL,beat=0;
-
-		//EnterCriticalSection(&g_cs);
-		memcpy(&vis_data[0][0][0],&g_visdata[0][0][0],576*2*2);
-		g_visdata_pstat=1;
-		beat=g_is_beat;
-		g_is_beat=0;
-		//LeaveCriticalSection(&g_cs);
-
-    //if (!g_ThreadQuit)
-    {
-		  //if (!g_in_destroy) DDraw_Enter(&w,&h,&fb,&fb2);
-      //else break;
-		  if (fb&&fb2)
-		  {
-        extern int g_dlg_w, g_dlg_h, g_dlg_fps;
-#ifdef LASER
-        g_laser_linelist->ClearLineList();
-#endif
-
-	    //EnterCriticalSection(&g_render_cs);
-		int t=g_render_transition->render(vis_data,beat,s?fb2:fb,s?fb:fb2,w,h);
-	    //LeaveCriticalSection(&g_render_cs);
-        if (t&1) s^=1;
-
-#ifdef LASER
-        s=0;
-        memset(fb,0,w*h*sizeof(int));
-        LineDrawList(g_laser_linelist,fb,w,h);
-#endif
-		DDraw_Exit(s);
-
-        int lastt=framedata[framedata_pos];
-        int thist=GetTickCount();
-        framedata[framedata_pos]=thist;
-        g_dlg_w=w;
-        g_dlg_h=h;
-        if (lastt)
-        {
-          g_dlg_fps=MulDiv(sizeof(framedata)/sizeof(framedata[0]),10000,thist-lastt);
-        }
-        framedata_pos++;
-        if (framedata_pos >= sizeof(framedata)/sizeof(framedata[0])) framedata_pos=0;
-
-		  }
-      int fs=DDraw_IsFullScreen();
-      int sv=(fs?(cfg_speed>>8):cfg_speed)&0xff;
-	    Sleep(min(max(sv,1),100));
-    }
-	}
-  _endthreadex(0);
-	return 0;
-}

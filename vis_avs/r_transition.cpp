@@ -205,9 +205,9 @@ int C_RenderTransitionClass::render(char visdata[2][2][576], int isBeat, int *fr
     C_RenderListClass *temp=g_render_effects;
     g_render_effects=g_render_effects2;
     g_render_effects2=temp;
-    extern int need_repop;
+    //extern int need_repop;
     extern char *extension(char *fn);
-    need_repop=1;
+    //need_repop=1;
     //PostMessage(g_hwndDlg,WM_USER+20,0,0);
 	/*
     if (!notext && stricmp("aph",extension(last_file)))
