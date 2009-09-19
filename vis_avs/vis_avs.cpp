@@ -31,13 +31,14 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <math.h>
 #include <process.h>
 #include "draw.h"
-#include "wnd.h"
 #include "r_defs.h"
 #include "render.h"
 #include "vis.h"
+#include "wnd.h"
 #include "cfgwnd.h"
 #include "resource.h"
 #include "bpm.h"
+#include "vis_avs.h"
 
 #include <stdio.h>
 
@@ -65,11 +66,6 @@ char *verstr=
 
 static unsigned int WINAPI RenderThread(LPVOID a);
 
-static void config(struct winampVisModule *this_mod);
-static int init(struct winampVisModule *this_mod);
-static int render(struct winampVisModule *this_mod);
-static void quit(struct winampVisModule *this_mod);
-
 HANDLE g_hThread;
 volatile int g_ThreadQuit;
 
@@ -79,80 +75,6 @@ static CRITICAL_SECTION g_cs;
 
 static unsigned char g_visdata[2][2][576];
 static int g_visdata_pstat;
-
-#ifndef WA3_COMPONENT
-
-static winampVisModule *getModule(int which);
-static winampVisHeader hdr = { VIS_HDRVER, verstr, getModule };
-
-extern "C" {
-	__declspec( dllexport ) winampVisHeader* winampVisGetHeader()
-	{
-		return &hdr;
-	}
-}
-
-static winampVisModule *getModule(int which)
-{
-	static winampVisModule mod =
-	{
-#ifdef LASER
-		"Advanced Visualization Studio/Laser",
-#else
-		"Advanced Visualization Studio",
-#endif
-		NULL,	// hwndParent
-		NULL,	// hDllInstance
-		0,		// sRate
-		0,		// nCh
-		1000/70,		// latencyMS
-		1000/70,// delayMS
-		2,		// spectrumNch
-		2,		// waveformNch
-		{ 0, },	// spectrumData
-		{ 0, },	// waveformData
-		config,
-		init,
-		render, 
-		quit
-	};
-	if (which==0) return &mod;
-	return 0;
-}
-#endif
-
-BOOL CALLBACK aboutProc(HWND hwndDlg, UINT uMsg, WPARAM wParam,LPARAM lParam)
-{
-  switch (uMsg)
-  {
-    case WM_INITDIALOG: 
-      SetDlgItemText(hwndDlg,IDC_VERSTR,verstr);
-      
-    return 1;
-    case WM_COMMAND:
-      switch (LOWORD(wParam))
-      {
-        case IDOK: case IDCANCEL:
-          EndDialog(hwndDlg,0);
-        return 0;
-      }
-    return 0;
-  }
-  return 0;
-}
-
-static void config(struct winampVisModule *this_mod)
-{
-	this_mod->hwndParent = NULL;
-  if (!g_hwnd || !IsWindow(g_hwnd))
-  {
-    DialogBox(this_mod->hDllInstance,MAKEINTRESOURCE(IDD_DIALOG2),this_mod->hwndParent,aboutProc);
-  }
-  else
-  {
-    SendMessage(g_hwnd,WM_USER+33,0,0);
-  }
-}
 
 CRITICAL_SECTION g_render_cs;
 static int g_is_beat;
@@ -172,17 +94,12 @@ void main_setRenderThreadPriority()
 	SetThreadPriority(g_hThread,prios[cfg_render_prio]);
 }
 
-extern void previous_preset(HWND hwnd);
-extern void next_preset(HWND hwnd);
-extern void random_preset(HWND hwnd);
-
 #if 0//syntax highlighting
 HINSTANCE hRich;
 #endif
 
-static int init(struct winampVisModule *this_mod)
+int avs_init(struct winampVisModule *this_mod)
 {
-	this_mod->hwndParent = NULL;
 	DWORD id;
   FILETIME ft;
 #if 0//syntax highlighting
@@ -199,23 +116,6 @@ static int init(struct winampVisModule *this_mod)
 	char *p=g_path+strlen(g_path);
 	while (p > g_path && *p != '\\') p--;
 	*p = 0;
-
-#ifdef WA2_EMBED
-  if (SendMessage(this_mod->hwndParent,WM_USER,0,0) < 0x2900)
-  {
-    MessageBox(this_mod->hwndParent,"This version of AVS requires Winamp 2.9+","AVS ERROR",MB_OK|MB_ICONSTOP);
-    return 1;
-  }
-#endif
-
-#ifndef NO_MMX
-  extern int is_mmx(void);
-  if (!is_mmx())
-  {
-    MessageBox(this_mod->hwndParent,"NO MMX SUPPORT FOUND - CANNOT RUN AVS - GET THE NON-MMX VERSION.","AVS ERROR",MB_OK|MB_ICONSTOP);
-    return 1;
-  }
-#endif
 
 
 #ifdef WA3_COMPONENT
@@ -236,10 +136,9 @@ static int init(struct winampVisModule *this_mod)
 	g_ThreadQuit=0;
 	g_visdata_pstat=1;
 
-  AVS_EEL_IF_init();
+	AVS_EEL_IF_init();
 
-	if (Wnd_Init(this_mod)) return 1;
-
+	if (Wnd_Init(this_mod))
 	{
 		int x;
 		for (x = 0; x < 256; x ++)
@@ -252,7 +151,7 @@ static int init(struct winampVisModule *this_mod)
 		}
 	}
 
-  initBpm();
+	initBpm();
 
 	Render_Init(g_hInstance, (const char*) this_mod->userData);
 
@@ -260,29 +159,24 @@ static int init(struct winampVisModule *this_mod)
 
 	g_hThread=(HANDLE)_beginthreadex(NULL,0,RenderThread,0,0,(unsigned int *)&id);
   main_setRenderThreadPriority();
-  SetForegroundWindow(g_hwnd);
-  SetFocus(g_hwnd);
 
   return 0;
 }
 
-static int render(struct winampVisModule *this_mod)
+int avs_resize(struct winampVisModule *this_mod)
 {
-	this_mod->hwndParent = NULL;
-	int i, j;
-    for (i = 0; i < 2; i++)
-    {
-		for (j = 0; j < 576; j++)
-		{
-				debug("this_mod->spectrumData[%d][%d] = %d;\n", i, j, this_mod->spectrumData[i][j]);
-				debug("this_mod->waveformData[%d][%d] = %d;\n", i, j, this_mod->waveformData[i][j]);
-		}
-    }
+	RECT r;
+	GetClientRect(g_hwnd,&r);
+	DDraw_Resize(r.right-r.left,r.bottom-r.top,cfg_fs_d&2);
+	return 0;
+}
 
+int avs_render(struct winampVisModule *this_mod)
+{
 #ifndef WA3_COMPONENT
 	int x,avs_beat=0,b;
 	if (g_ThreadQuit) return 1;
-  EnterCriticalSection(&g_cs);
+	EnterCriticalSection(&g_cs);
 	if (g_ThreadQuit)
 	{
 		LeaveCriticalSection(&g_cs);
@@ -347,9 +241,8 @@ static int render(struct winampVisModule *this_mod)
   return 0;
 }
 
-static void quit(struct winampVisModule *this_mod)
+void avs_quit(struct winampVisModule *this_mod)
 {
-	this_mod->hwndParent = NULL;
 #define DS(x) 
   //MessageBox(this_mod->hwndParent,x,"AVS Debug",MB_OK)
 	if (g_hThread)
@@ -503,7 +396,7 @@ static unsigned int WINAPI RenderThread(LPVOID a)
 
     if (!g_ThreadQuit)
     {
-		  if (IsWindow(g_hwnd)&&!g_in_destroy) DDraw_Enter(&w,&h,&fb,&fb2);
+		  if (!g_in_destroy) DDraw_Enter(&w,&h,&fb,&fb2);
       else break;
 		  if (fb&&fb2)
 		  {
@@ -522,7 +415,7 @@ static unsigned int WINAPI RenderThread(LPVOID a)
         memset(fb,0,w*h*sizeof(int));
         LineDrawList(g_laser_linelist,fb,w,h);
 #endif
-			  if (IsWindow(g_hwnd)) DDraw_Exit(s);
+		DDraw_Exit(s);
 
         int lastt=framedata[framedata_pos];
         int thist=GetTickCount();

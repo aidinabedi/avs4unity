@@ -575,10 +575,6 @@ SOURCE=.\draw.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\main.cpp
-# End Source File
-# Begin Source File
-
 SOURCE=.\render.cpp
 # End Source File
 # Begin Source File
@@ -604,6 +600,10 @@ SOURCE=.\TIMING.H
 # Begin Source File
 
 SOURCE=.\undo.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\vis_avs.cpp
 # End Source File
 # Begin Source File
 
@@ -644,6 +644,10 @@ SOURCE=.\rlib.h
 # Begin Source File
 
 SOURCE=.\undo.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\vis_avs.h
 # End Source File
 # Begin Source File
 

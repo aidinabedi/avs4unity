@@ -40,6 +40,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "undo.h"
 #include <multimon.h>
 #include <string>
+#include "vis_avs.h"
 
 #include "avs_eelif.h"
 #include "debug.h"
@@ -101,9 +102,6 @@ HWND last_parent;
 extern int cfg_fs_use_overlay;
 extern int g_config_seh;
 
-
-void toggleWharfAmpDock(HWND hwnd);
-
 //-
 
 int g_in_destroy=0,g_minimized=0,g_fakeinit=0;
@@ -116,15 +114,6 @@ int debug_reg[8];
 void GetClientRect_adj(HWND hwnd, RECT *r)
 {
   GetClientRect(hwnd,r);
-#ifndef WA3_COMPONENT
-#ifndef WA2_EMBED
-  if (!inWharf)
-  {
-    r->right-=7+6;
-    r->bottom-=15+5;
-  }
-#endif
-#endif
 }
 
 HWND g_hwnd;
@@ -148,10 +137,6 @@ char *scanstr_back(char *str, char *toscan, char *defval)
 	}
 }
 
-HWND GetWinampHwnd(void){
-	return hwnd_WinampParent;
-}
-
 int LoadPreset(int preset)
 {
   char temp[MAX_PATH];
@@ -169,33 +154,6 @@ void WritePreset(int preset)
   char temp[MAX_PATH];
   wsprintf(temp,"%s\\PRESET%02d.APH",g_path,preset);
   g_render_effects->__SavePreset(temp);
-}
-
-void my_getViewport(RECT *r, RECT *sr) {
-  if (sr) 
-  {
-	  HINSTANCE h=LoadLibrary("user32.dll");
-	  if (h) {
-      HMONITOR (WINAPI *Mfr)(LPCRECT lpcr, DWORD dwFlags) = (HMONITOR (WINAPI *)(LPCRECT, DWORD)) GetProcAddress(h, "MonitorFromRect");
-      BOOL (WINAPI *Gmi)(HMONITOR mon, LPMONITORINFO lpmi) = (BOOL (WINAPI *)(HMONITOR,LPMONITORINFO)) GetProcAddress(h,"GetMonitorInfoA");    
-			if (Mfr && Gmi) {
-			  HMONITOR hm;
-			  hm=Mfr(sr,MONITOR_DEFAULTTONULL);
-        if (hm) {
-          MONITORINFOEX mi;
-          memset(&mi,0,sizeof(mi));
-          mi.cbSize=sizeof(mi);
-
-          if (Gmi(hm,&mi)) {
-            *r=mi.rcWork;
-            return;
-          }          
-        }
-			}
-			FreeLibrary(h);
-		}
-	}
-  SystemParametersInfo(SPI_GETWORKAREA,0,r,0);
 }
 
 
@@ -232,47 +190,6 @@ void SetTransparency(HWND hWnd, int enable, int amount)
 			FreeLibrary(h);
 		}
 	}
-}
-
-int readyToLoadPreset(HWND parent, int isnew)
-{
-  if (config_prompt_save_preset && C_UndoStack::isdirty())
-  {
-    static int here;
-    if (here) return 0;
-    here=1;
-    
-    // strange bugfix, ick
-    void Wnd_GoWindowed(HWND hwnd);
-    if (DDraw_IsFullScreen()) Wnd_GoWindowed(g_hwnd);
-
-
-    int ret=MessageBox(parent,
-      !isnew ? "Current preset may have been edited. Save preset before loading?" :
-      "Current preset may have been edited. Save preset before creating new?",
-      "AVS Preset Modified",MB_YESNOCANCEL);
-    here=0;
-
-    if (ret == IDCANCEL)
-    {
-      return 0;
-    }
-    if (ret == IDYES)
-    {
-      int dosavePreset(HWND hwndDlg);
-      int r=1;
-//      if (last_preset[0])
-  //      r=g_render_effects->SavePreset(last_preset);
-
-      if (r) 
-      {
-        if (dosavePreset(parent)) return 0;
-      }
-    }
-  }
-  //C_UndoStack::clear();
-  // g_preset_dirty=0;
-  return 1;
 }
 
 char *extension(char *fn) 
@@ -366,7 +283,7 @@ void Wnd_GoFullScreen(HWND hwnd)
       if (inWharf) 
       {
         need_redock=1;
-        toggleWharfAmpDock(hwnd);
+        //toggleWharfAmpDock(hwnd);
       }
 	    SetTransparency(hwnd,0,0);
 			if (cfg_cancelfs_on_deactivate) ShowCursor(FALSE);
@@ -390,7 +307,7 @@ void Wnd_GoFullScreen(HWND hwnd)
 #endif
         DDraw_SetFullScreen(1,cfg_fs_w,cfg_fs_h,cfg_fs_d&1,cfg_fs_bpp);
         RECT r;
-        my_getViewport(&r,&tr);
+        //my_getViewport(&r,&tr);
         SetWindowPos(hwnd,HWND_TOPMOST,r.left,r.top,cfg_fs_w,cfg_fs_h,0);
         SetForegroundWindow(hwnd);
       }
@@ -431,40 +348,17 @@ int cfg_fs_dblclk=1;
 
 int Wnd_Init(struct winampVisModule *this_mod)
 {
-	WNDCLASS wc={0,};
-	g_mod=this_mod;
-	wc.style = CS_DBLCLKS|CS_VREDRAW|CS_HREDRAW;
-	wc.lpfnWndProc = WndProc;
-	wc.hInstance = this_mod->hDllInstance;
-	wc.hbrBackground = (HBRUSH) GetStockObject(BLACK_BRUSH);
-	wc.lpszClassName = "avswnd";
-	wc.hCursor=LoadCursor(NULL,IDC_ARROW);
+	g_mod = this_mod;
+	g_hwnd = this_mod->hwndParent;
+	DDraw_Init();
 
-  hwnd_WinampParent=this_mod->hwndParent;
+	avs_resize(this_mod);
 
-
-	if (!RegisterClass(&wc)) 
-	{
-//		MessageBox(this_mod->hwndParent,"Error registering window class","Error",MB_OK);
-	//	return 1;
-	}
-	{
-#ifdef WA3_COMPONENT
-    INI_FILE = reinterpret_cast<char *>(calloc(WA_MAX_PATH, sizeof(char)));
-		char *p=INI_FILE;
-		GetModuleFileName(NULL,INI_FILE,sizeof(INI_FILE));
-		if (p[0]) while (p[1]) p++;
-		while (p >= INI_FILE && *p != '.') p--;
-		*++p='i';
-		*++p='n';
-		*++p='i';
-		*++p=0;
-#else
 	const char* path = (const char*) this_mod->userData;
 	if (path) INI_FILE_BUF = path;
 	INI_FILE_BUF += "winamp.ini";
 	INI_FILE = INI_FILE_BUF.c_str();
-#endif
+
 #define AVS_SECTION "AVS"
 #ifdef LASER
 #undef AVS_SECTION
@@ -537,7 +431,6 @@ int Wnd_Init(struct winampVisModule *this_mod)
 		  debug_reg[x]=GetPrivateProfileInt(AVS_SECTION,debugreg,x,INI_FILE);
     }
 
-	}
 #ifdef LASER
   cfg_transitions=0;
   cfg_transition_mode=0;
@@ -545,6 +438,7 @@ int Wnd_Init(struct winampVisModule *this_mod)
 #endif
 
 	g_in_destroy=0;
+	/*
 #ifndef WA2_EMBED
   {
     RECT ir={cfg_x,cfg_y,cfg_w+cfg_x,cfg_y+cfg_h};
@@ -557,6 +451,7 @@ int Wnd_Init(struct winampVisModule *this_mod)
     // determine bounding rectangle for window
   }
 #endif
+  */
 #ifdef WA3_COMPONENT
   int styles=WS_VISIBLE|WS_CHILD|WS_CLIPCHILDREN|WS_CLIPSIBLINGS;
   HWND par = this_mod->hwndParent;
@@ -578,34 +473,10 @@ int Wnd_Init(struct winampVisModule *this_mod)
 #endif
 #endif
 
-#ifndef WA2_EMBED
-
-  CreateWindowEx(WS_EX_ACCEPTFILES,"avswnd","Winamp AVS Display",
-		styles,cfg_x,cfg_y,cfg_w,cfg_h,par,NULL,
-				this_mod->hDllInstance,0);
-#else
-	CreateWindowEx(WS_EX_ACCEPTFILES,"avswnd","avs",
-	          	styles,0,0,100,100,par,NULL, this_mod->hDllInstance,0);
-  SendMessage(this_mod->hwndParent, WM_WA_IPC, (int)g_hwnd, IPC_SETVISWND);
-#endif
-  if (!g_hwnd)
-  {
-		MessageBox(this_mod->hwndParent,"Error creating window","Error",MB_OK);
-		return 1;
-  }
-#ifdef WA2_EMBED
-  ShowWindow(par,SW_SHOWNA);
-#endif
-#ifndef WA3_COMPONENT
-  SetTransparency(g_hwnd,cfg_trans,cfg_trans_amount);
-#endif
-#ifdef WA3_COMPONENT
-  InitializeCriticalSection(&g_title_cs);
-#endif
   return 0;
 }
 
-static void WriteInt(char *name, int value)
+static void WriteInt(const char *INI_FILE, char *name, int value)
 {
   char str[128];
   wsprintf(str,"%d",value);
@@ -614,214 +485,74 @@ static void WriteInt(char *name, int value)
 
 void Wnd_Quit(void)	
 {
-  extern HWND g_hwndDlg;
   g_in_destroy=1;
-#ifdef WA2_EMBED
-  SendMessage(g_mod->hwndParent, WM_WA_IPC, 0, IPC_SETVISWND);
-  if (myWindowState.me) 
-  {
-    SetForegroundWindow(g_mod->hwndParent);
-    DestroyWindow(myWindowState.me);
-  }
-	else 
-#endif
-  if (g_hwnd && IsWindow(g_hwnd)) DestroyWindow(g_hwnd);
-	g_hwnd=NULL;
-	UnregisterClass("avswnd",g_mod->hDllInstance);
-	{
 #ifdef LASER
     extern int g_laser_zones,g_laser_nomessage;
     //wsprintf(str,"%d",g_laser_zones);
-		WriteInt("laser_zones",g_laser_zones);
-		WriteInt("laser_nomessage",g_laser_nomessage);
+		WriteInt(INI_FILE, "laser_zones",g_laser_zones);
+		WriteInt(INI_FILE, "laser_nomessage",g_laser_nomessage);
 #else
-    WriteInt("smp",g_config_smp);
-    WriteInt("smp_mt",g_config_smp_mt);
+    WriteInt(INI_FILE, "smp",g_config_smp);
+    WriteInt(INI_FILE, "smp_mt",g_config_smp_mt);
 #endif
 #ifdef WA2_EMBED
-		WriteInt("wx",myWindowState.r.left);
-    WriteInt("wy",myWindowState.r.top);
-		WriteInt("ww",myWindowState.r.right-myWindowState.r.left);
-		WriteInt("wh",myWindowState.r.bottom-myWindowState.r.top);
+		WriteInt(INI_FILE, "wx",myWindowState.r.left);
+    WriteInt(INI_FILE, "wy",myWindowState.r.top);
+		WriteInt(INI_FILE, "ww",myWindowState.r.right-myWindowState.r.left);
+		WriteInt(INI_FILE, "wh",myWindowState.r.bottom-myWindowState.r.top);
 #else
-		WriteInt("cfg_x",cfg_x);
-		WriteInt("cfg_y",cfg_y);
-		WriteInt("cfg_w",cfg_w);
-		WriteInt("cfg_h",cfg_h);
+		WriteInt(INI_FILE, "cfg_x",cfg_x);
+		WriteInt(INI_FILE, "cfg_y",cfg_y);
+		WriteInt(INI_FILE, "cfg_w",cfg_w);
+		WriteInt(INI_FILE, "cfg_h",cfg_h);
 #endif
 		WritePrivateProfileString(AVS_SECTION,"config_pres_subdir",config_pres_subdir,INI_FILE);
 
-		WriteInt("cfg_docked",inWharf?1:0);
-		WriteInt("cfg_cfgwnd_open",cfg_cfgwnd_open);
-		WriteInt("cfg_cfgwnd_x",cfg_cfgwnd_x);
-		WriteInt("cfg_cfgwnd_y",cfg_cfgwnd_y);
-		WriteInt("cfg_fs_w",cfg_fs_w);
-		WriteInt("cfg_fs_h",cfg_fs_h);
-		WriteInt("cfg_fs_d",cfg_fs_d);
-		WriteInt("cfg_fs_bpp",cfg_fs_bpp);
-		WriteInt("cfg_fs_fps",cfg_fs_fps);
-		WriteInt("cfg_fs_rnd",cfg_fs_rnd);
-		WriteInt("cfg_fs_rnd_time",cfg_fs_rnd_time);    
-    WriteInt("cfg_fs_dblclk",cfg_fs_dblclk);
-		WriteInt("cfg_fs_flip",cfg_fs_flip);
-		WriteInt("cfg_fs_height",cfg_fs_height);
-		WriteInt("cfg_fs_use_overlay",cfg_fs_use_overlay);
-		WriteInt("cfg_fs_cancelondeactivate",cfg_cancelfs_on_deactivate);
-		WriteInt("cfg_speed",cfg_speed);
-		WriteInt("cfg_trans",cfg_trans);
-		WriteInt("cfg_dont_min_avs",cfg_dont_min_avs);
-		WriteInt("cfg_smartbeat",cfg_smartbeat);
-		WriteInt("cfg_smartbeatsticky",cfg_smartbeatsticky);
-		WriteInt("cfg_smartbeatresetnewsong",cfg_smartbeatresetnewsong);
-		WriteInt("cfg_smartbeatonlysticky",cfg_smartbeatonlysticky);
-		WriteInt("cfg_transitions_en",cfg_transitions);
-		WriteInt("cfg_transitions_preinit",cfg_transitions2);
-		WriteInt("cfg_transitions_speed",cfg_transitions_speed);
-		WriteInt("cfg_transitions_mode",cfg_transition_mode);
-		WriteInt("cfg_bkgnd_render",cfg_bkgnd_render);
-		WriteInt("cfg_bkgnd_render_color",cfg_bkgnd_render_color);
-		WriteInt("cfg_render_prio",cfg_render_prio);
-    WriteInt("g_preset_dirty",C_UndoStack::isdirty());
-    WriteInt("cfg_prompt_save_preset",config_prompt_save_preset);
+		//WriteInt(INI_FILE, "cfg_docked",inWharf?1:0);
+		WriteInt(INI_FILE, "cfg_cfgwnd_open",cfg_cfgwnd_open);
+		WriteInt(INI_FILE, "cfg_cfgwnd_x",cfg_cfgwnd_x);
+		WriteInt(INI_FILE, "cfg_cfgwnd_y",cfg_cfgwnd_y);
+		WriteInt(INI_FILE, "cfg_fs_w",cfg_fs_w);
+		WriteInt(INI_FILE, "cfg_fs_h",cfg_fs_h);
+		WriteInt(INI_FILE, "cfg_fs_d",cfg_fs_d);
+		WriteInt(INI_FILE, "cfg_fs_bpp",cfg_fs_bpp);
+		WriteInt(INI_FILE, "cfg_fs_fps",cfg_fs_fps);
+		WriteInt(INI_FILE, "cfg_fs_rnd",cfg_fs_rnd);
+		WriteInt(INI_FILE, "cfg_fs_rnd_time",cfg_fs_rnd_time);    
+    WriteInt(INI_FILE, "cfg_fs_dblclk",cfg_fs_dblclk);
+		WriteInt(INI_FILE, "cfg_fs_flip",cfg_fs_flip);
+		WriteInt(INI_FILE, "cfg_fs_height",cfg_fs_height);
+		WriteInt(INI_FILE, "cfg_fs_use_overlay",cfg_fs_use_overlay);
+		WriteInt(INI_FILE, "cfg_fs_cancelondeactivate",cfg_cancelfs_on_deactivate);
+		WriteInt(INI_FILE, "cfg_speed",cfg_speed);
+		WriteInt(INI_FILE, "cfg_trans",cfg_trans);
+		WriteInt(INI_FILE, "cfg_dont_min_avs",cfg_dont_min_avs);
+		WriteInt(INI_FILE, "cfg_smartbeat",cfg_smartbeat);
+		WriteInt(INI_FILE, "cfg_smartbeatsticky",cfg_smartbeatsticky);
+		WriteInt(INI_FILE, "cfg_smartbeatresetnewsong",cfg_smartbeatresetnewsong);
+		WriteInt(INI_FILE, "cfg_smartbeatonlysticky",cfg_smartbeatonlysticky);
+		WriteInt(INI_FILE, "cfg_transitions_en",cfg_transitions);
+		WriteInt(INI_FILE, "cfg_transitions_preinit",cfg_transitions2);
+		WriteInt(INI_FILE, "cfg_transitions_speed",cfg_transitions_speed);
+		WriteInt(INI_FILE, "cfg_transitions_mode",cfg_transition_mode);
+		WriteInt(INI_FILE, "cfg_bkgnd_render",cfg_bkgnd_render);
+		WriteInt(INI_FILE, "cfg_bkgnd_render_color",cfg_bkgnd_render_color);
+		WriteInt(INI_FILE, "cfg_render_prio",cfg_render_prio);
+    WriteInt(INI_FILE, "g_preset_dirty",C_UndoStack::isdirty());
+    WriteInt(INI_FILE, "cfg_prompt_save_preset",config_prompt_save_preset);
 		WritePrivateProfileString(AVS_SECTION,"last_preset_name",last_preset,INI_FILE);
-    WriteInt("cfg_reuseonresize",config_reuseonresize);
-    WriteInt("cfg_log_errors",g_log_errors);
-    WriteInt("cfg_reset_vars",g_reset_vars_on_recompile);
-    WriteInt("cfg_seh",g_config_seh);
+    WriteInt(INI_FILE, "cfg_reuseonresize",config_reuseonresize);
+    WriteInt(INI_FILE, "cfg_log_errors",g_log_errors);
+    WriteInt(INI_FILE, "cfg_reset_vars",g_reset_vars_on_recompile);
+    WriteInt(INI_FILE, "cfg_seh",g_config_seh);
 
     int x;
     for (x = 0; x < 8; x ++)
     {
       char debugreg[32];
       wsprintf(debugreg,"debugreg_%d",x);
-      WriteInt(debugreg,debug_reg[x]);
+      WriteInt(INI_FILE, debugreg,debug_reg[x]);
     }
-	}
-#ifdef WA3_COMPONENT
-  DeleteCriticalSection(&g_title_cs);
-  if(INI_FILE)
-    free(INI_FILE);
-#endif
-}
-
-
-void toggleWharfAmpDock(HWND hwnd)
-{
-  if (DDraw_IsFullScreen()) return;
-  HWND Wharf=g_hwndDlg?GetDlgItem(g_hwndDlg,IDC_RRECT):NULL;
-  if (!Wharf) return;
-
-  if (!inWharf)
-	{
-	  RECT r,r2;
-
-    // show IDC_RRECT, resize IDC_TREE1 down
-    GetWindowRect(GetDlgItem(g_hwndDlg,IDC_RRECT),&r);
-    GetWindowRect(GetDlgItem(g_hwndDlg,IDC_TREE1),&r2);
-    SetWindowPos(GetDlgItem(g_hwndDlg,IDC_TREE1),NULL,0,0,r2.right-r2.left,r.top - 4 - r2.top,SWP_NOMOVE|SWP_NOZORDER|SWP_NOACTIVATE);
-    ShowWindow(GetDlgItem(g_hwndDlg,IDC_RRECT),SW_SHOWNA);
-
-#ifdef WA2_EMBED
-    GetClientRect(hwnd,&r);
-    last_windowed_w=r.right;
-    last_windowed_h=r.bottom;
-#endif
-    inWharf=1;
-	  GetWindowRect(Wharf, &r);
-    SetParent(hwnd, Wharf);
-#ifndef WA3_COMPONENT
-#ifndef WA2_EMBED
-	  SetWindowLong(hwnd, GWL_STYLE, (GetWindowLong(hwnd,GWL_STYLE)&(~WS_POPUP))|WS_CHILD);
-#else
-    HWND w = g_hWA2ParentWindow;
-    while (GetWindowLong(w, GWL_STYLE) & WS_CHILD) 
-    {
-      w = GetParent(w);
-    }
-    if (!SendMessage(g_mod->hwndParent, WM_WA_IPC, (int)w, IPC_FF_ISMAINWND)) ShowWindow(w,SW_HIDE);
-    else ShowWindow(g_hWA2ParentWindow,SW_HIDE);
-#endif
-#else
-    ShowWindow(GetParent(last_parent),SW_HIDE);
-#endif
-	  SetWindowPos(hwnd, NULL, 0, 0, r.right-r.left, r.bottom-r.top, SWP_NOZORDER|SWP_NOACTIVATE);
-	  DDraw_Resize(r.right-r.left, r.bottom-r.top,cfg_fs_d&2);
-	}
-  else
-	{
-
-	  RECT r,r2;
-    // hide IDC_RRECT, resize IDC_TREE1 up
-    GetWindowRect(GetDlgItem(g_hwndDlg,IDC_RRECT),&r);
-    GetWindowRect(GetDlgItem(g_hwndDlg,IDC_TREE1),&r2);
-    ShowWindow(GetDlgItem(g_hwndDlg,IDC_RRECT),SW_HIDE);
-    SetWindowPos(GetDlgItem(g_hwndDlg,IDC_TREE1),NULL,0,0,r2.right-r2.left,r.bottom - r2.top - 2,SWP_NOMOVE|SWP_NOZORDER|SWP_NOACTIVATE);
-
-#ifdef WA3_COMPONENT
-    ShowWindow(GetParent(last_parent),SW_SHOWNA);
-	  SetParent(hwnd, last_parent);
-    last_parent=0;
-    DDraw_Resize(cfg_w,cfg_h,cfg_fs_d&2);
-    SetWindowPos(hwnd,0,0,0,cfg_w,cfg_h,SWP_NOACTIVATE|SWP_NOZORDER);
-    SetTimer(hwnd,66,500,NULL);
-#else
-#ifndef WA2_EMBED
-	  SetWindowLong(hwnd, GWL_STYLE, (GetWindowLong(hwnd,GWL_STYLE)&(~(WS_CHILD|WS_VISIBLE)))|WS_POPUP);
-	  SetParent(hwnd, NULL);
-	  SetWindowPos(hwnd, NULL, cfg_x, cfg_y, cfg_w,cfg_h, SWP_NOZORDER|SWP_NOACTIVATE);
-    DDraw_Resize(cfg_w-7-6,cfg_h-15-5,cfg_fs_d&2);
-    ShowWindow(hwnd,SW_SHOWNA);
-#else
-	  SetParent(hwnd, g_hWA2ParentWindow);
-    DDraw_Resize(last_windowed_w,last_windowed_h,cfg_fs_d&2);
-
-    HWND w = g_hWA2ParentWindow;
-    while (GetWindowLong(w, GWL_STYLE) & WS_CHILD) 
-    {
-      w = GetParent(w);
-    }
-    if (SendMessage(g_mod->hwndParent, WM_WA_IPC, (int)w, IPC_FF_ISMAINWND)) 
-      w=g_hWA2ParentWindow;
-
-    PostMessage(GetParent(hwnd),WM_SIZE,0,0);
-
-    ShowWindow(w,SW_SHOWNA);
-
-    //SetWindowPos(hwnd,0,0,0,cfg_w,cfg_h,SWP_NOACTIVATE|SWP_NOZORDER);
-    //SetTimer(hwnd,66,500,NULL);
-#endif
-#endif
-    InvalidateRect(Wharf,NULL,TRUE);
-	  inWharf=0;
-	}	
-}
-
-int findInMenu(HMENU parent, HMENU sub, UINT id, char *buf, int buf_len)
-{
-  int x,l=GetMenuItemCount(parent);
-  char *bufadd=buf+strlen(buf);
-  bufadd[0]='\\';
-  for (x = 0; x < l; x ++)
-  {
-    MENUITEMINFO mi={sizeof(mi),MIIM_SUBMENU|MIIM_TYPE|MIIM_ID,};
-    mi.dwTypeData=bufadd+1;
-    mi.cch=buf_len - (bufadd-buf+2);
-    GetMenuItemInfo(parent,x,TRUE,&mi);
-    if (mi.hSubMenu)
-    {
-      if (sub && mi.hSubMenu == sub)
-        return 1;
-      if (findInMenu(mi.hSubMenu,sub,id,buf,buf_len)) 
-        return 1;
-    }
-    else
-    {
-      if (!sub && id && mi.wID == id)
-        return 1;
-    }
-  }
-  bufadd[0]=0;
-  return 0;
 }
 
 static int find_preset(char *parent_path, int dir, char *lastpreset, char *newpreset, int *state)
@@ -901,11 +632,10 @@ static int find_preset(char *parent_path, int dir, char *lastpreset, char *newpr
   return 0;
 }
 
-void next_preset(HWND hwnd) {
-  g_rnd_cnt=0;
 
-  if (readyToLoadPreset(hwnd,0))
-  {
+void avs_next_preset() {
+  //g_rnd_cnt=0;
+
     char dirmask[2048];
     char i_path[1024];
     if (config_pres_subdir[0]) wsprintf(i_path,"%s\\%s",g_path,config_pres_subdir);
@@ -921,13 +651,11 @@ void next_preset(HWND hwnd) {
       if (g_render_transition->LoadPreset(dirmask,2) != 2)
   	    lstrcpyn(last_preset,dirmask,sizeof(last_preset));
     }
-  }
 }
 
-void random_preset(HWND hwnd) {
-  g_rnd_cnt=0;
-  if (readyToLoadPreset(hwnd,0))
-  {
+void avs_random_preset() {
+  //g_rnd_cnt=0;
+
     char dirmask[2048];
     char i_path[1024];
     if (config_pres_subdir[0]) wsprintf(i_path,"%s\\%s",g_path,config_pres_subdir);
@@ -943,13 +671,11 @@ void random_preset(HWND hwnd) {
       if (g_render_transition->LoadPreset(dirmask,4) != 2)
         lstrcpyn(last_preset,dirmask,sizeof(last_preset));
     }
-  }
 }
 
-void previous_preset(HWND hwnd) {
-  g_rnd_cnt=0;
-  if (readyToLoadPreset(hwnd,0))
-  {
+void avs_previous_preset() {
+  //g_rnd_cnt=0;
+
     char dirmask[2048];
     char i_path[1024];
     if (config_pres_subdir[0]) wsprintf(i_path,"%s\\%s",g_path,config_pres_subdir);
@@ -965,150 +691,6 @@ void previous_preset(HWND hwnd) {
       if (g_render_transition->LoadPreset(dirmask,2) != 2)
         lstrcpyn(last_preset,dirmask,sizeof(last_preset));
     }
-  }
-}
-
-static HMENU presetTreeMenu;
-static int presetTreeCount;
-
-void DoPopupMenu() {
-  // Winamp3 Bug#331: Don't let the popupmenu pop when in fullscreen.
-  if (!DDraw_IsFullScreen())
-  {
-    void DDraw_NoUpdateScreen(int r);
-		HANDLE h;
-		WIN32_FIND_DATA d;
-		char dirmask[1024];
-
-    if (presetTreeMenu) DestroyMenu(presetTreeMenu);
-
-    POINT p;
-    int x;
-    int insert_pos=0, directory_pos=0;
-    presetTreeMenu=CreatePopupMenu();
-
-    {
-      MENUITEMINFO i={sizeof(i),};
-      i.fMask=MIIM_TYPE|MIIM_DATA|MIIM_ID;
-      i.fType=MFT_STRING;
-      i.dwItemData=0;
-
-		  i.wID = 1024;
-		  i.dwTypeData="Fullscreen";
-		  i.cch=strlen("Fullscreen");
-		  InsertMenuItem(presetTreeMenu,insert_pos++,TRUE,&i);
-
-      if (!inWharf)
-      {
-		    i.wID = 256;
-		    i.dwTypeData="AVS Editor";
-		    i.cch=strlen("AVS Editor");
-		    InsertMenuItem(presetTreeMenu,insert_pos++,TRUE,&i);
-      }
-
-  	  if (!DDraw_IsFullScreen())
-		  {
-		    i.wID = 512;
-	  		i.dwTypeData="Dock in AVS Editor";
-		  	i.cch=strlen(i.dwTypeData);
-		    InsertMenuItem(presetTreeMenu,insert_pos++,TRUE,&i);
-		  }
-
-      i.wID=0;
-      i.fType=MFT_SEPARATOR;
-      InsertMenuItem(presetTreeMenu,insert_pos++,TRUE,&i);
-    }
-
-    GetCursorPos(&p);
-    if (DDraw_IsFullScreen())
-    {
-      CheckMenuItem(presetTreeMenu,1024,MF_CHECKED);
-    }
-    if (IsWindowVisible(g_hwndDlg)) CheckMenuItem(presetTreeMenu,256,MF_CHECKED);
-    if (inWharf) CheckMenuItem(presetTreeMenu,512,MF_CHECKED);
-      
-    wsprintf(dirmask,"%s\\*.*",g_path);
-
-    directory_pos=insert_pos;
-
-    presetTreeCount=1025;
-		h = FindFirstFile(dirmask,&d);
-		if (h != INVALID_HANDLE_VALUE)
-		{
-			do 
-      {
-        if (d.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY && d.cFileName[0] != '.')
-        {
-          MENUITEMINFO mi={sizeof(mi),MIIM_SUBMENU|MIIM_TYPE,MFT_STRING,MFS_DEFAULT
-          };
-          mi.hSubMenu=CreatePopupMenu();
-          mi.dwTypeData=d.cFileName;
-          mi.cch = strlen(d.cFileName);
-          InsertMenuItem(presetTreeMenu,directory_pos++,TRUE,&mi);
-          insert_pos++;
-        }
-        else if (!stricmp(extension(d.cFileName),"avs"))
-        {
-				  extension(d.cFileName)[-1]=0;
-          MENUITEMINFO i={sizeof(i),MIIM_TYPE|MIIM_ID,MFT_STRING,MFS_DEFAULT };
-				  i.dwTypeData = d.cFileName;
-				  i.cch = strlen(d.cFileName);
-				  i.wID=presetTreeCount++;
-				  InsertMenuItem(presetTreeMenu,insert_pos++,TRUE,&i);
-        }
-			} while (FindNextFile(h,&d));
-			FindClose(h);
-		}
-
-    x=TrackPopupMenu(presetTreeMenu,TPM_LEFTALIGN|TPM_TOPALIGN|TPM_RETURNCMD|TPM_RIGHTBUTTON|TPM_LEFTBUTTON,p.x,p.y,0,g_hwnd,NULL);
-    if (x == 1024)
-    {
-      if (DDraw_IsFullScreen())
-      {
-        if (!cfg_fs_use_overlay) Wnd_GoWindowed(g_hwnd);
-      }
-  	  else
-        Wnd_GoFullScreen(g_hwnd);
-    }
-    else if (x == 512)
-	  {
-      if (!inWharf && !cfg_cfgwnd_open)
-      {
-        cfg_cfgwnd_open=1;
-			  ShowWindow(g_hwndDlg,SW_SHOWNA);
-        CfgWnd_RePopIfNeeded();
-      }
-	    toggleWharfAmpDock(g_hwnd);
-	  }
-    else if (x == 256)
-	  {
-      SendMessage(g_hwnd,WM_USER+33,0,0);
-	  }
-    else if (x >= 1025)
-    {
-      char buf[2048];
-      buf[0]=0;
-      if (readyToLoadPreset(g_hwnd,0))
-      {
-        if (findInMenu(presetTreeMenu,0,x,buf,2048))
-        {
-          char temp[4096];
-          wsprintf(temp,"%s%s.avs",g_path,buf);
-          if (g_render_transition->LoadPreset(temp,1) != 2)
-					  lstrcpyn(last_preset,temp,sizeof(last_preset));
-        }
-        else
-        {
-//            g_render_transition->LoadPreset
-//          wsprintf(temp,"%s\\%s",g_path,curfilename);
-        }
-      }
-    }
-
-    DestroyMenu(presetTreeMenu);
-    presetTreeMenu=0;
-
-  }
 }
  
 static LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
@@ -1170,7 +752,7 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM l
       GetWindowRect(g_hwndDlg,&r);
       if (!PtInRect(&r,p))
       {
-        toggleWharfAmpDock(hwnd);
+        //toggleWharfAmpDock(hwnd);
       }
     }
     else
@@ -1180,7 +762,7 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM l
       GetWindowRect(hwnd,&r2);
       if (PtInRect(&r,p) && cfg_cfgwnd_open && !PtInRect(&r2,p))
       {
-        toggleWharfAmpDock(hwnd);
+        //toggleWharfAmpDock(hwnd);
       }
     }
     ReleaseCapture();
@@ -1201,7 +783,7 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM l
     {
       if (inWharf)
       {
-          toggleWharfAmpDock(hwnd);
+          //toggleWharfAmpDock(hwnd);
       }
       else if (IsWindowVisible(g_hwndDlg))
 		  {
@@ -1237,11 +819,10 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM l
       }
     return 0;
     case WM_INITMENUPOPUP:
-      if (HIWORD(lParam) == 0 && presetTreeMenu && !GetMenuItemCount((HMENU)wParam))
+      if (HIWORD(lParam) == 0 && !GetMenuItemCount((HMENU)wParam))
       {
         char buf[2048];
         buf[0]=0;
-        if (findInMenu(presetTreeMenu,(HMENU)wParam,0,buf,2048))
         {
 		      HANDLE h;
 		      WIN32_FIND_DATA d;
@@ -1269,7 +850,6 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM l
                 MENUITEMINFO i={sizeof(i),MIIM_TYPE|MIIM_ID,MFT_STRING,MFS_DEFAULT };
 				        i.dwTypeData = d.cFileName;
 				        i.cch = strlen(d.cFileName);
-				        i.wID=presetTreeCount++;
 				        InsertMenuItem((HMENU)wParam,insert_pos++,TRUE,&i);
               }
 			      } while (FindNextFile(h,&d));
@@ -1279,13 +859,12 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM l
       }
     return 0;
     case WM_RBUTTONUP:
-      DoPopupMenu();
     return 0;
     case WM_USER+33:
       DDraw_SetStatusText("",100);
       if (inWharf)
       {
-          toggleWharfAmpDock(hwnd);
+          //toggleWharfAmpDock(hwnd);
       }
       else if (IsWindowVisible(g_hwndDlg))
 		  {
@@ -1318,15 +897,15 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM l
       if (wParam == VK_SPACE)
       {
       do_random:
-        random_preset(hwnd);
+        avs_random_preset();
       }
       else if (wParam==0x55)
       {
-        next_preset(hwnd);
+        avs_next_preset();
       }
       else if (wParam==0x59)
       {
-        previous_preset(hwnd);
+        avs_previous_preset();
       }
       else if (wParam == VK_RETURN)
       {
@@ -1366,7 +945,7 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM l
         }
         else
         {
-          if (!readyToLoadPreset(hwnd,0)) return 0;
+          //if (!readyToLoadPreset(hwnd,0)) return 0;
 
           if (LoadPreset(wParam-VK_F1)) st="loaded from";
           else st="error loading from";
@@ -1387,7 +966,7 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM l
         }
         else
         {
-          if (!readyToLoadPreset(hwnd,0)) return 0;
+          //if (!readyToLoadPreset(hwnd,0)) return 0;
           if (LoadPreset(wParam-'0'+12+n)) st="loaded from";
           else st="error loading from";
         }          
@@ -1424,7 +1003,7 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM l
         if (need_redock && g_hwndDlg)
         {
           need_redock=0;
-          toggleWharfAmpDock(hwnd);
+          //toggleWharfAmpDock(hwnd);
         }
       }
 		  if (wParam == 32)
@@ -1487,7 +1066,7 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM l
         char temp[MAX_PATH];
         HDROP hdrop=(HDROP)wParam;
         DragQueryFile(hdrop,0,temp,sizeof(temp));
-        if (readyToLoadPreset(hwnd,0))
+        //if (readyToLoadPreset(hwnd,0))
         {
           if (!stricmp(extension(temp),"avs"))
           {
@@ -1619,7 +1198,7 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM l
           {
             RECT r2;
             GetWindowRect(hwnd,&r2);
-            my_getViewport(&r,&r2);
+            //my_getViewport(&r,&r2);
           }
 					else if (w==1 && IsWindowVisible(hwnd_WinampParent))
 						GetWindowRect(hwnd_WinampParent,&r);
