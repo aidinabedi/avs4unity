@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <time.h>
 #include <conio.h>
+#include <vector>
 
 #include "vis.h"
 #include "vis_avs.h"
@@ -134,10 +135,11 @@ int WINAPI WinMain(
 
 	//printf("loop ...\n");
     // Step 3: The Message Loop
-	int w, h;
+	int w, h, i;
 	int *fb, *fb2;
 	MSG msg;
 	bool exitLoop = false;
+	std::vector<float> pixels;
 
 	while (!exitLoop)
 	{
@@ -151,8 +153,14 @@ int WINAPI WinMain(
 		Sleep(mod.delayMs);
 		
 		DDraw_Enter(&w,&h,&fb,&fb2);
-		int s = avs_render(fb, fb2, w, h, 0);
-		DDraw_Exit(s);
+
+		pixels.resize(w*h*4);
+		avs_render(&pixels[0], w, h, 0);
+
+		for (i = 0; i < pixels.size(); i++)
+			((unsigned char*) fb)[i] = (unsigned char) (pixels[i] * 255);
+
+		DDraw_Exit(0);
 	}
 
 	avs_quit();

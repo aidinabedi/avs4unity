@@ -40,6 +40,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "vis_avs.h"
 
 #include <string>
+#include <vector>
 #include <stdio.h>
 
 #ifdef WA3_COMPONENT
@@ -144,7 +145,10 @@ int avs_init(const char* path)
   return 0;
 }
 
-int avs_render(int* fb, int* fb2, int width, int height, float time)
+std::vector<int> fb;
+std::vector<int> fb2;
+
+int avs_render(void* colors, int width, int height, float time)
 {
 	//TODO: fill these with audio output
 	unsigned char spectrumData[2][576];
@@ -159,6 +163,16 @@ int avs_render(int* fb, int* fb2, int width, int height, float time)
 		waveformData[0][y] = waveformData[0][y-1] + (rand()%200 - 100) *.2;
 		waveformData[1][y] = waveformData[1][y-1] + (rand()%200 - 100) *.2;
 	}
+
+	int pixels = width * height;
+	if (fb.size() != pixels)
+	{
+		fb.resize(pixels);
+		fb2.resize(pixels);
+		memset(&fb[0], 0, pixels*sizeof(int));
+		memset(&fb2[0], 0, pixels*sizeof(int));
+	}
+
 
 #ifndef WA3_COMPONENT
 	int x,avs_beat=0,b;
@@ -240,15 +254,24 @@ int avs_render(int* fb, int* fb2, int width, int height, float time)
 	char vis_data[2][2][576];
 	memcpy(&vis_data[0][0][0],&g_visdata[0][0][0],576*2*2);
 
-	int t=g_render_transition->render(vis_data,beat,s?fb2:fb,s?fb:fb2,width,height);
+	int t=g_render_transition->render(vis_data,beat,s?&fb2[0]:&fb[0],s?&fb[0]:&fb2[0],width,height);
 	if (t&1) s^=1;
+
+	unsigned char *src = (unsigned char *) (s?&fb2[0]:&fb[0]);
+	float *dst = (float *) colors;
+
+	int i, size = pixels*4;
+    for (i = 0; i < size; i++)
+	{
+		dst[i] = ((float) src[i])/255;
+	}
 
 #ifdef LASER
     s=0;
-    memset(fb,0,w*h*sizeof(int));
+    memset(fb,0,pixels*sizeof(int));
     LineDrawList(g_laser_linelist,fb,w,h);
 #endif
-	return s;
+	return 0;
 }
 
 void avs_quit()
