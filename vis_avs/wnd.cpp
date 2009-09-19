@@ -68,7 +68,7 @@ char g_title[2048];
 #define ID_VIS_RANDOM                   40384
 
 struct winampVisModule *g_mod;
-extern volatile int g_ThreadQuit;
+//extern volatile int g_ThreadQuit;
 extern int /*g_preset_dirty,*/ config_prompt_save_preset, config_reuseonresize;
 int g_saved_preset_dirty;
 extern int cfg_cancelfs_on_deactivate;
@@ -1010,11 +1010,11 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM l
 		  {
         DWORD a;
 #ifdef WA3_COMPONENT
-        EnterCriticalSection(&g_title_cs);
+        //EnterCriticalSection(&g_title_cs);
         const char *pitem=api->core_getCurrent(0);    
         if (!pitem || api->metadb_getMetaData(pitem, MT_NAME, g_title, 2047, MDT_STRINGZ) < 1)
           STRCPY(g_title,"");
-        LeaveCriticalSection(&g_title_cs);
+        //LeaveCriticalSection(&g_title_cs);
 #endif
         
         if (SendMessageTimeout(hwnd_WinampParent,WM_USER,(WPARAM)0,201,SMTO_BLOCK,1000,&a) && a)
@@ -1170,7 +1170,7 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM l
       DeleteObject(hFrameDC);
       DeleteObject(hFrameBitmap);
 #endif
-      g_ThreadQuit=1;
+      //g_ThreadQuit=1;
 #ifndef WA3_COMPONENT
       if (!g_minimized)
       {

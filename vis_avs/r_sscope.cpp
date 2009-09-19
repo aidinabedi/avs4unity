@@ -133,7 +133,7 @@ int  C_THISCLASS::save_config(unsigned char *data)
 
 C_THISCLASS::C_THISCLASS()
 {
-  InitializeCriticalSection(&rcs);
+  //InitializeCriticalSection(&rcs);
   AVS_EEL_INITINST();
 #ifdef LASER
   mode=1;
@@ -174,7 +174,7 @@ C_THISCLASS::~C_THISCLASS()
     codehandle[x]=0;
   }
   AVS_EEL_QUITINST();
-  DeleteCriticalSection(&rcs);
+  //DeleteCriticalSection(&rcs);
 }
 
 static __inline int makeint(double t)
@@ -188,7 +188,7 @@ int C_THISCLASS::render(char visdata[2][2][576], int isBeat, int *framebuffer, i
 {
   if (need_recompile)
   {
-    EnterCriticalSection(&rcs);
+    //EnterCriticalSection(&rcs);
 
     if (!var_n || g_reset_vars_on_recompile) 
     {
@@ -219,7 +219,7 @@ int C_THISCLASS::render(char visdata[2][2][576], int isBeat, int *framebuffer, i
       codehandle[x]=compileCode(effect_exp[x].get());
     }
 
-    LeaveCriticalSection(&rcs);
+    //LeaveCriticalSection(&rcs);
   }
   if (isBeat&0x80000000) return 0;
 
@@ -456,14 +456,14 @@ BOOL CALLBACK C_THISCLASS::g_DlgProc(HWND hwndDlg, UINT uMsg, WPARAM wParam,LPAR
       {
         if ((LOWORD(wParam) == IDC_EDIT1||LOWORD(wParam) == IDC_EDIT2||LOWORD(wParam) == IDC_EDIT3||LOWORD(wParam) == IDC_EDIT4) && HIWORD(wParam) == EN_CHANGE)
         {
-          EnterCriticalSection(&g_this->rcs);
+          //EnterCriticalSection(&g_this->rcs);
           g_this->effect_exp[0].get_from_dlgitem(hwndDlg,IDC_EDIT1);
           g_this->effect_exp[1].get_from_dlgitem(hwndDlg,IDC_EDIT2);
           g_this->effect_exp[2].get_from_dlgitem(hwndDlg,IDC_EDIT3);
           g_this->effect_exp[3].get_from_dlgitem(hwndDlg,IDC_EDIT4);
           g_this->need_recompile=1;
 				  if (LOWORD(wParam) == IDC_EDIT4) g_this->inited = 0;
-          LeaveCriticalSection(&g_this->rcs);
+          //LeaveCriticalSection(&g_this->rcs);
 #if 0//syntax highlighting
           if (LOWORD(wParam) == IDC_EDIT1)
             doAVSEvalHighLight(hwndDlg,IDC_EDIT1,g_this->effect_exp[0].get());

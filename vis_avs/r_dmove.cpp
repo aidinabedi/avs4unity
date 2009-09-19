@@ -165,7 +165,7 @@ int  C_THISCLASS::save_config(unsigned char *data)
 C_THISCLASS::C_THISCLASS()
 {
   AVS_EEL_INITINST();
-  InitializeCriticalSection(&rcs);
+  //InitializeCriticalSection(&rcs);
   need_recompile=1;
   memset(codehandle,0,sizeof(codehandle));
   m_lasth=m_lastw=0;
@@ -202,7 +202,7 @@ C_THISCLASS::~C_THISCLASS()
 
   m_tab=0;
   m_wmul=0;
-  DeleteCriticalSection(&rcs);
+  //DeleteCriticalSection(&rcs);
 }
 
 int C_THISCLASS::render(char visdata[2][2][576], int isBeat, int *framebuffer, int *fbout, int w, int h)
@@ -263,7 +263,7 @@ int C_THISCLASS::smp_begin(int max_threads, char visdata[2][2][576], int isBeat,
   {
     int x;
     int err=0;
-    EnterCriticalSection(&rcs);
+    //EnterCriticalSection(&rcs);
     if (!var_b || g_reset_vars_on_recompile)
     {
       clearVars();
@@ -283,7 +283,7 @@ int C_THISCLASS::smp_begin(int max_threads, char visdata[2][2][576], int isBeat,
       freeCode(codehandle[x]);
       codehandle[x]=compileCode(effect_exp[x].get());
     }
-    LeaveCriticalSection(&rcs);
+    //LeaveCriticalSection(&rcs);
   }
   if (isBeat&0x80000000) return 0;
   int *fbin = !buffern ? framebuffer : (int *)getGlobalBuffer(w,h,buffern-1,0);
@@ -750,14 +750,14 @@ static BOOL CALLBACK g_DlgProc(HWND hwndDlg, UINT uMsg, WPARAM wParam,LPARAM lPa
       
         if (LOWORD(wParam) == IDC_EDIT1||LOWORD(wParam) == IDC_EDIT2||LOWORD(wParam) == IDC_EDIT3||LOWORD(wParam) == IDC_EDIT4)
         {
-          EnterCriticalSection(&g_this->rcs);
+          //EnterCriticalSection(&g_this->rcs);
           g_this->effect_exp[0].get_from_dlgitem(hwndDlg,IDC_EDIT1);
           g_this->effect_exp[1].get_from_dlgitem(hwndDlg,IDC_EDIT2);
           g_this->effect_exp[2].get_from_dlgitem(hwndDlg,IDC_EDIT3);
           g_this->effect_exp[3].get_from_dlgitem(hwndDlg,IDC_EDIT4);
           g_this->need_recompile=1;
 				  if (LOWORD(wParam) == IDC_EDIT4) g_this->inited = 0;
-          LeaveCriticalSection(&g_this->rcs);
+          //LeaveCriticalSection(&g_this->rcs);
         }
       }
     return 0;

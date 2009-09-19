@@ -264,10 +264,10 @@ if (TCNow > lastCheck+1000)
 	char songName[256];
 	lastCheck=TCNow;
 #ifdef WA3_COMPONENT
-    EnterCriticalSection(&g_title_cs);
+    //EnterCriticalSection(&g_title_cs);
     lstrcpyn(songName,g_title,255);
     songName[255]=0;
-    LeaveCriticalSection(&g_title_cs);
+    //LeaveCriticalSection(&g_title_cs);
 #else
 	GetWindowText(winampWnd, songName, 255);
 #endif

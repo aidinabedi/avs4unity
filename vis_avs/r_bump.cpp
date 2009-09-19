@@ -95,7 +95,7 @@ C_THISCLASS::~C_THISCLASS()
 	freeCode(codeHandle);
 	freeCode(codeHandleBeat);
 	freeCode(codeHandleInit);
-  DeleteCriticalSection(&rcs);
+  //DeleteCriticalSection(&rcs);
   AVS_EEL_QUITINST();
 }
 
@@ -104,7 +104,7 @@ C_THISCLASS::~C_THISCLASS()
 C_THISCLASS::C_THISCLASS() // set up default configuration
 {
   AVS_EEL_INITINST();
-  InitializeCriticalSection(&rcs);
+  //InitializeCriticalSection(&rcs);
 	buffern=0;
 	oldstyle=0;
 	invert=0;
@@ -220,7 +220,7 @@ int C_THISCLASS::render(char visdata[2][2][576], int isBeat, int *framebuffer, i
 
   if (need_recompile) 
   {
-    EnterCriticalSection(&rcs);
+    //EnterCriticalSection(&rcs);
     if (!var_bi || g_reset_vars_on_recompile)
     {
       clearVars();
@@ -242,7 +242,7 @@ int C_THISCLASS::render(char visdata[2][2][576], int isBeat, int *framebuffer, i
     codeHandleBeat = compileCode(code2.get());
     codeHandleInit = compileCode(code3.get());
 
-    LeaveCriticalSection(&rcs);
+    //LeaveCriticalSection(&rcs);
   }
   if (isBeat&0x80000000) return 0;
 
@@ -507,25 +507,25 @@ switch (uMsg)
 			}
 	  if (LOWORD(wParam) == IDC_CODE1 && HIWORD(wParam) == EN_CHANGE)
 			{
-        EnterCriticalSection(&g_ConfigThis->rcs);
+        //EnterCriticalSection(&g_ConfigThis->rcs);
         g_ConfigThis->code1.get_from_dlgitem(hwndDlg,IDC_CODE1);
 				g_ConfigThis->need_recompile=1;
-        LeaveCriticalSection(&g_ConfigThis->rcs);
+        //LeaveCriticalSection(&g_ConfigThis->rcs);
 			}
 	  if (LOWORD(wParam) == IDC_CODE2 && HIWORD(wParam) == EN_CHANGE)
 			{
-        EnterCriticalSection(&g_ConfigThis->rcs);
+        //EnterCriticalSection(&g_ConfigThis->rcs);
         g_ConfigThis->code2.get_from_dlgitem(hwndDlg,IDC_CODE2);
 				g_ConfigThis->need_recompile=1;
-        LeaveCriticalSection(&g_ConfigThis->rcs);
+        //LeaveCriticalSection(&g_ConfigThis->rcs);
 			}
 	  if (LOWORD(wParam) == IDC_CODE3 && HIWORD(wParam) == EN_CHANGE)
 			{
-        EnterCriticalSection(&g_ConfigThis->rcs);
+        //EnterCriticalSection(&g_ConfigThis->rcs);
         g_ConfigThis->code3.get_from_dlgitem(hwndDlg,IDC_CODE3);
 				g_ConfigThis->need_recompile=1;
         g_ConfigThis->initted=0;
-        LeaveCriticalSection(&g_ConfigThis->rcs);
+        //LeaveCriticalSection(&g_ConfigThis->rcs);
 			}
 	  if (HIWORD(wParam) == CBN_SELCHANGE && LOWORD(wParam) == IDC_COMBO1) // handle clicks to combo box
 		  g_ConfigThis->buffern = SendDlgItemMessage(hwndDlg, IDC_COMBO1, CB_GETCURSEL, 0, 0);

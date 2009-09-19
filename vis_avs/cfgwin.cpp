@@ -567,9 +567,9 @@ static BOOL CALLBACK DlgProc_Disp(HWND hwndDlg, UINT uMsg, WPARAM wParam,LPARAM 
           }
         return 0;
         case IDC_THREAD_PRIORITY:
-          extern void main_setRenderThreadPriority();
+          //extern void main_setRenderThreadPriority();
           cfg_render_prio=SendDlgItemMessage(hwndDlg,IDC_THREAD_PRIORITY,CB_GETCURSEL,0,0);
-          main_setRenderThreadPriority();
+          //setRenderThreadPriority();
         return 0;
       }
 		return 0;
@@ -924,13 +924,13 @@ static BOOL CALLBACK debugProc(HWND hwndDlg, UINT uMsg, WPARAM wParam,LPARAM lPa
         if (g_log_errors)
         {
           //IDC_EDIT1
-          EnterCriticalSection(&g_eval_cs);
+          //EnterCriticalSection(&g_eval_cs);
           char buf[1025];
           GetDlgItemText(hwndDlg,IDC_EDIT1,buf,sizeof(buf)-1);
           buf[sizeof(buf)-1]=0;
           if (strcmp(buf,last_error_string))
             SetDlgItemText(hwndDlg,IDC_EDIT1,last_error_string);
-          LeaveCriticalSection(&g_eval_cs);
+          //LeaveCriticalSection(&g_eval_cs);
         }
 
         {
@@ -956,10 +956,10 @@ static BOOL CALLBACK debugProc(HWND hwndDlg, UINT uMsg, WPARAM wParam,LPARAM lPa
           g_config_seh = !IsDlgButtonChecked(hwndDlg,IDC_CHECK3);
         return 0;             
         case IDC_BUTTON1:
-          EnterCriticalSection(&g_eval_cs);
+          //EnterCriticalSection(&g_eval_cs);
           last_error_string[0]=0;
           SetDlgItemText(hwndDlg,IDC_EDIT1,"");
-          LeaveCriticalSection(&g_eval_cs);
+          //LeaveCriticalSection(&g_eval_cs);
         return 0;
         case IDOK:
         case IDCANCEL:
@@ -1281,13 +1281,13 @@ static BOOL CALLBACK dlgProc(HWND hwndDlg, UINT uMsg, WPARAM wParam,LPARAM lPara
             int err=1;
             if (a >= 0)
             {
-              EnterCriticalSection(&g_render_cs);
+              //EnterCriticalSection(&g_render_cs);
               err=s->removeRender(a,0);
               if (!err)
               {
                 d->insertRender(source,b+(g_dragplaceisbelow&1));
               }
-              LeaveCriticalSection(&g_render_cs);       
+              //LeaveCriticalSection(&g_render_cs);       
             }
             if (err) 
             {
@@ -1597,9 +1597,9 @@ static BOOL CALLBACK dlgProc(HWND hwndDlg, UINT uMsg, WPARAM wParam,LPARAM lPara
                   }                  
                 }
                 
-  							EnterCriticalSection(&g_render_cs);
+  							//EnterCriticalSection(&g_render_cs);
                 parentrender->insertRender(&ren,insert_pos);
-								LeaveCriticalSection(&g_render_cs);
+								//LeaveCriticalSection(&g_render_cs);
                 C_RenderListClass::T_RenderListType *newt=(C_RenderListClass::T_RenderListType *)GlobalAlloc(GMEM_FIXED,sizeof(C_RenderListClass::T_RenderListType));
                 *newt=ren;
                 TV_INSERTSTRUCT is={parenthandle,0,{TVIF_PARAM|TVIF_TEXT|TVIF_CHILDREN,0,0,0,ren.render->get_desc(),0,0,0,newt->effect_index==LIST_ID?1:0,(int)newt}};
@@ -1636,9 +1636,9 @@ static BOOL CALLBACK dlgProc(HWND hwndDlg, UINT uMsg, WPARAM wParam,LPARAM lPara
             if (hTreeItem == g_hroot)
             {
               CfgWnd_Unpopulate();
-						  EnterCriticalSection(&g_render_cs);
+						  //EnterCriticalSection(&g_render_cs);
               g_render_effects->clearRenders();
-						  LeaveCriticalSection(&g_render_cs);
+						  //LeaveCriticalSection(&g_render_cs);
               CfgWnd_Populate();
             }
             else if (hTreeItem)
@@ -1655,13 +1655,13 @@ static BOOL CALLBACK dlgProc(HWND hwndDlg, UINT uMsg, WPARAM wParam,LPARAM lPara
 				          TreeView_GetItem(GetDlgItem(hwndDlg,IDC_TREE1),&i2);
                   C_RenderListClass::T_RenderListType *tparent=(C_RenderListClass::T_RenderListType *)i2.lParam;
                   parentrender=(C_RenderListClass*)tparent->render;
-							    EnterCriticalSection(&g_render_cs);
+							    //EnterCriticalSection(&g_render_cs);
                   if (!parentrender->removeRenderFrom(tp,1))
                   {
                     TreeView_DeleteItem(GetDlgItem(hwndDlg,IDC_TREE1),hTreeItem);
 	                  if (tp) GlobalFree((HGLOBAL)tp);
                   }
-  						    LeaveCriticalSection(&g_render_cs);
+  						    //LeaveCriticalSection(&g_render_cs);
                 }
               }
             }
@@ -1704,9 +1704,9 @@ static BOOL CALLBACK dlgProc(HWND hwndDlg, UINT uMsg, WPARAM wParam,LPARAM lPara
                     ren.render->load_config(buf,len);
                     GlobalFree((HGLOBAL)buf);
                   }
-						      EnterCriticalSection(&g_render_cs);
+						      //EnterCriticalSection(&g_render_cs);
                   parentrender->insertRender(&ren,insert_pos);
-						      LeaveCriticalSection(&g_render_cs);
+						      //LeaveCriticalSection(&g_render_cs);
                   
                   C_RenderListClass::T_RenderListType *newt=(C_RenderListClass::T_RenderListType *)GlobalAlloc(GMEM_FIXED,sizeof(C_RenderListClass::T_RenderListType));
                   *newt=ren;

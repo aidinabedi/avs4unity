@@ -265,7 +265,7 @@ int  C_THISCLASS::save_config(unsigned char *data)
 
 C_THISCLASS::C_THISCLASS()
 {
-  InitializeCriticalSection(&rcs);
+  //InitializeCriticalSection(&rcs);
   sourcemapped=0;
   trans_tab=NULL;
   trans_tab_w=trans_tab_h=0;
@@ -286,7 +286,7 @@ C_THISCLASS::~C_THISCLASS()
   trans_tab=NULL;
   trans_tab_w=trans_tab_h=0;
   trans_effect=0;
-  DeleteCriticalSection(&rcs);
+  //DeleteCriticalSection(&rcs);
 }
 
 int C_THISCLASS::smp_begin(int max_threads, char visdata[2][2][576], int isBeat, int *framebuffer, int *fbout, int w, int h)
@@ -439,11 +439,11 @@ int C_THISCLASS::smp_begin(int max_threads, char visdata[2][2][576], int isBeat,
       int is_rect = trans_effect == 32767 ? rectangular : descriptions[trans_effect].uses_rect;
       *pw=w;
       *ph=h;
-      EnterCriticalSection(&rcs);
+      //EnterCriticalSection(&rcs);
       codehandle=compileCode(
         trans_effect == 32767 ? effect_exp.get() : descriptions[trans_effect].eval_desc
         );
-      LeaveCriticalSection(&rcs);
+      //LeaveCriticalSection(&rcs);
       if (codehandle)         
       {
         double w2=w/2;
@@ -837,11 +837,11 @@ static BOOL CALLBACK g_DlgProc(HWND hwndDlg, UINT uMsg, WPARAM wParam,LPARAM lPa
       if (wParam == 1)
       {
         KillTimer(hwndDlg,1);
-        EnterCriticalSection(&g_this->rcs);
+        //EnterCriticalSection(&g_this->rcs);
         g_this->effect=32767;
         g_this->effect_exp.get_from_dlgitem(hwndDlg,IDC_EDIT1);
         g_this->effect_exp_ch=1;
-        LeaveCriticalSection(&g_this->rcs);
+        //LeaveCriticalSection(&g_this->rcs);
       }
     return 0;
     case WM_COMMAND:
@@ -873,10 +873,10 @@ static BOOL CALLBACK g_DlgProc(HWND hwndDlg, UINT uMsg, WPARAM wParam,LPARAM lPa
 
           // always reinit =)
           {
-            EnterCriticalSection(&g_this->rcs);
+            //EnterCriticalSection(&g_this->rcs);
             g_this->effect_exp.get_from_dlgitem(hwndDlg,IDC_EDIT1);
             g_this->effect_exp_ch=1;
-            LeaveCriticalSection(&g_this->rcs);
+            //LeaveCriticalSection(&g_this->rcs);
           }
         }
         else 
@@ -935,11 +935,11 @@ static BOOL CALLBACK g_DlgProc(HWND hwndDlg, UINT uMsg, WPARAM wParam,LPARAM lPa
           g_this->rectangular=IsDlgButtonChecked(hwndDlg,IDC_CHECK3)?1:0;
           if (SendDlgItemMessage(hwndDlg,IDC_LIST1,LB_GETCURSEL,0,0) != sizeof(descriptions)/sizeof(descriptions[0]))
           {
-            EnterCriticalSection(&g_this->rcs);
+            //EnterCriticalSection(&g_this->rcs);
             g_this->effect=32767;
             g_this->effect_exp.get_from_dlgitem(hwndDlg,IDC_EDIT1);
             g_this->effect_exp_ch=1;
-            LeaveCriticalSection(&g_this->rcs);
+            //LeaveCriticalSection(&g_this->rcs);
             SendDlgItemMessage(hwndDlg,IDC_LIST1,LB_SETCURSEL,sizeof(descriptions)/sizeof(descriptions[0]),0);
           }
           else

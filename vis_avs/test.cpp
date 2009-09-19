@@ -30,9 +30,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		case WM_KEYDOWN:
 		  if (wParam == VK_SPACE)
 			avs_random_preset();
-		  else if (wParam==0x55)
+		  else if (wParam==VK_LEFT)
 			avs_next_preset();
-		  else if (wParam==0x59)
+		  else if (wParam==VK_RIGHT)
 			avs_previous_preset();
 		  else if (wParam == VK_ESCAPE)
 			DestroyWindow(hwnd);

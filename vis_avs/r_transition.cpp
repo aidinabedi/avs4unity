@@ -95,15 +95,14 @@ unsigned int WINAPI C_RenderTransitionClass::m_initThread(LPVOID p)
   srand(ft.dwLowDateTime|ft.dwHighDateTime^GetCurrentThreadId());
   if (cfg_transitions2&32)
   {
-    extern HANDLE g_hThread;
-    int d=GetThreadPriority(g_hThread);
-    if (d == THREAD_PRIORITY_TIME_CRITICAL) d=THREAD_PRIORITY_HIGHEST;
-    else if (d == THREAD_PRIORITY_HIGHEST) d=THREAD_PRIORITY_ABOVE_NORMAL;
-    else if (d == THREAD_PRIORITY_ABOVE_NORMAL) d=THREAD_PRIORITY_NORMAL;
-    else if (d == THREAD_PRIORITY_NORMAL) d=THREAD_PRIORITY_BELOW_NORMAL;
-    else if (d == THREAD_PRIORITY_BELOW_NORMAL) d=THREAD_PRIORITY_LOWEST;
-    else if (d == THREAD_PRIORITY_LOWEST) d=THREAD_PRIORITY_IDLE;
-    SetThreadPriority(GetCurrentThread(),d);
+	int prios[]={
+		GetThreadPriority(GetCurrentThread()),
+		THREAD_PRIORITY_IDLE,
+		THREAD_PRIORITY_LOWEST,
+		THREAD_PRIORITY_NORMAL,
+		THREAD_PRIORITY_HIGHEST,
+	};
+	SetThreadPriority(GetCurrentThread(),prios[cfg_render_prio]);
   }
   int *fb=(int *)GlobalAlloc(GPTR,_this->l_w*_this->l_h*sizeof(int));
   char last_visdata[2][2][576]={0,};
@@ -131,7 +130,7 @@ int C_RenderTransitionClass::LoadPreset(char *file, int which, C_UndoItem *item)
   }
 
 
-  EnterCriticalSection(&g_render_cs);
+  //EnterCriticalSection(&g_render_cs);
   if (enabled)
   {
     enabled=0;
@@ -176,7 +175,7 @@ int C_RenderTransitionClass::LoadPreset(char *file, int which, C_UndoItem *item)
     C_UndoStack::saveundo(1);
     C_UndoStack::cleardirty();
   }
-  LeaveCriticalSection(&g_render_cs);
+  //LeaveCriticalSection(&g_render_cs);
 
   return !!r;
 }

@@ -224,7 +224,7 @@ C_RenderListClass::C_RenderListClass(int iroot)
 	outblendval=128;
 	ininvert=0;
 
-  InitializeCriticalSection(&rcs);
+  //InitializeCriticalSection(&rcs);
   use_code=0;
   inited=0;
   need_recompile=1;
@@ -343,7 +343,7 @@ C_RenderListClass::~C_RenderListClass()
     codehandle[x]=0;
   }
   AVS_EEL_QUITINST();
-  DeleteCriticalSection(&rcs);
+  //DeleteCriticalSection(&rcs);
 }
 
 static int __inline depthof(int c, int i)
@@ -370,7 +370,7 @@ int C_RenderListClass::render(char visdata[2][2][576], int isBeat, int *framebuf
   { 
     if (need_recompile)
     {
-      EnterCriticalSection(&rcs);
+      //EnterCriticalSection(&rcs);
 
       if (!var_beat || g_reset_vars_on_recompile) 
       {
@@ -393,7 +393,7 @@ int C_RenderListClass::render(char visdata[2][2][576], int isBeat, int *framebuf
         codehandle[x]=compileCode(effect_exp[x].get());
       }
 
-      LeaveCriticalSection(&rcs);
+      //LeaveCriticalSection(&rcs);
     }
 
     *var_beat = ((isBeat&1) && !is_preinit) ?1.0:0.0;
@@ -1110,12 +1110,12 @@ BOOL CALLBACK C_RenderListClass::g_DlgProc(HWND hwndDlg, UINT uMsg, WPARAM wPara
         case IDC_EDIT5:
           if (!g_this->isstart && HIWORD(wParam) == EN_CHANGE)
           {
-            EnterCriticalSection(&g_this->rcs);
+            //EnterCriticalSection(&g_this->rcs);
             g_this->effect_exp[0].get_from_dlgitem(hwndDlg,IDC_EDIT4);
             g_this->effect_exp[1].get_from_dlgitem(hwndDlg,IDC_EDIT5);
             g_this->need_recompile=1;
 				    if (LOWORD(wParam) == IDC_EDIT4) g_this->inited = 0;
-            LeaveCriticalSection(&g_this->rcs);
+            //LeaveCriticalSection(&g_this->rcs);
           }
         break;
         case IDC_COMBO1:
@@ -1217,7 +1217,7 @@ char C_RenderListClass::sig_str[] = "Nullsoft AVS Preset 0.2\x1a";
 
 int C_RenderListClass::__SavePreset(const char *filename)
 {
-  EnterCriticalSection(&g_render_cs);
+  //EnterCriticalSection(&g_render_cs);
 	unsigned char *data = (unsigned char *) GlobalAlloc(GPTR,1124*1024);
   int success=-1;
   if (data)
@@ -1240,13 +1240,13 @@ int C_RenderListClass::__SavePreset(const char *filename)
     else success=1;
     GlobalFree((HGLOBAL)data);
   }
-  LeaveCriticalSection(&g_render_cs);
+  //LeaveCriticalSection(&g_render_cs);
 	return success;
 }
 
 int C_RenderListClass::__LoadPreset(const char *filename, int clear)
 {
-  EnterCriticalSection(&g_render_cs);
+  //EnterCriticalSection(&g_render_cs);
 	unsigned char *data = (unsigned char *) GlobalAlloc(GPTR,1024*1024);
   int success=1;
   if (clear) clearRenders();
@@ -1278,13 +1278,13 @@ int C_RenderListClass::__LoadPreset(const char *filename, int clear)
     GlobalFree((HGLOBAL)data);
   }
 //  else MessageBox(NULL,"Error laoding preset: MALLOC",filename,MB_OK);
-  LeaveCriticalSection(&g_render_cs);
+  //LeaveCriticalSection(&g_render_cs);
   return success;
 }
 
 int C_RenderListClass::__SavePresetToUndo(C_UndoItem &item)
 {
-  EnterCriticalSection(&g_render_cs);
+  //EnterCriticalSection(&g_render_cs);
 	unsigned char *data = (unsigned char *) GlobalAlloc(GPTR,1124*1024);
   int success=-1;
   if (data)
@@ -1303,13 +1303,13 @@ int C_RenderListClass::__SavePresetToUndo(C_UndoItem &item)
     else success=1;
     GlobalFree((HGLOBAL)data);
   }
-  LeaveCriticalSection(&g_render_cs);
+  //LeaveCriticalSection(&g_render_cs);
 	return success;
 }
 
 int C_RenderListClass::__LoadPresetFromUndo(C_UndoItem &item, int clear)
 {
-  EnterCriticalSection(&g_render_cs);
+  //EnterCriticalSection(&g_render_cs);
 	unsigned char *data = (unsigned char *) GlobalAlloc(GPTR,1024*1024);
   int success=1;
   if (clear) clearRenders();
@@ -1334,7 +1334,7 @@ int C_RenderListClass::__LoadPresetFromUndo(C_UndoItem &item, int clear)
     }
     GlobalFree((HGLOBAL)data);
   }
-  LeaveCriticalSection(&g_render_cs);
+  //LeaveCriticalSection(&g_render_cs);
   return success;
 }
 
