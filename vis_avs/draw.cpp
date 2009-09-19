@@ -75,84 +75,12 @@ static char g_saved_desktop_wallpaper[256];
 static char g_saved_reg_bkgnd_color[64];
 static DWORD g_saved_bkgnd_color;
 
-extern void Wnd_GoWindowed(HWND hwnd);
-
 #define INIT_DIRECTDRAW_STRUCT(x) (ZeroMemory(&x, sizeof(x)), x.dwSize=sizeof(x))
 DDPIXELFORMAT g_ddpfOverlayFormats[] = 
 {   {sizeof(DDPIXELFORMAT), DDPF_FOURCC,MAKEFOURCC('U','Y','V','Y'),0,0,0,0,0}, // UYVY
     {sizeof(DDPIXELFORMAT), DDPF_FOURCC,MAKEFOURCC('Y','U','Y','2'),0,0,0,0,0}};  // YUY2
 
 #define NUM_OVERLAY_FORMATS (sizeof(g_ddpfOverlayFormats) / sizeof(g_ddpfOverlayFormats[0]))
-
-static HWND hwndOverlayWnd;
-
-static LRESULT CALLBACK FSOverlayWndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
-{
-  static unsigned int start_t;
-
-	if (
-    
-        (((message == WM_KEYDOWN && (wParam == VK_ESCAPE || wParam == VK_RETURN)) || 
-		     message == WM_LBUTTONUP) && GetTickCount()-start_t > 1000)
-         
-         || 
-
-         (cfg_cancelfs_on_deactivate && ((message == WM_NCACTIVATE && !wParam) ||
-         message == WM_KILLFOCUS))
-        )
-	{
-    DestroyWindow(hwnd);
-    Wnd_GoWindowed(g_hwnd);
-    return 0;
-	}
-  switch(message)
-  {
-  case WM_CREATE:
-    start_t=GetTickCount();
-  return 0;
-  case WM_SETCURSOR:
-    SetCursor(NULL);
-  return TRUE;
-  case WM_DESTROY:
-    hwndOverlayWnd=0;
-  return 0;
-  case WM_PAINT:
-    {
-      PAINTSTRUCT ps;
-      HDC hdc=BeginPaint(hwnd,&ps);
-      RECT r;
-      GetClientRect(hwnd,&r);
-      int rv=0xff&(cfg_bkgnd_render_color>>16), gv=0xff&(cfg_bkgnd_render_color>>8), bv=0xff&cfg_bkgnd_render_color;
-      HBRUSH b=CreateSolidBrush(RGB(rv,gv,bv));
-      SelectObject(ps.hdc, b); 
-      Rectangle(ps.hdc, r.left, r.top, r.right, r.bottom); 
-      DeleteObject(b);
-      EndPaint(hwnd,&ps);
-    }
-    return 0;
-  case WM_KEYDOWN:
-    return SendMessage(g_hwnd, message, wParam, lParam);
-  }
-  return DefWindowProc(hwnd, message, wParam, lParam);
-}
-
-static void DD_CreateFullscreenOverlayWindow()
-{
-  static int inited=0;
-  if(!inited)
-  {
-  	WNDCLASS wc={0,};
-  	wc.style = CS_DBLCLKS|CS_VREDRAW|CS_HREDRAW;
-  	wc.lpfnWndProc = FSOverlayWndProc;
-  	wc.hInstance = g_hInstance;
-  	wc.hbrBackground = NULL;
-  	wc.lpszClassName = "avsfsoverlaywnd";
-  	wc.hCursor=NULL;
-  	if(!RegisterClass(&wc)) return;
-    inited=1;
-  }
-  hwndOverlayWnd=CreateWindowEx(WS_EX_TOPMOST|WS_EX_TOOLWINDOW,"avsfsoverlaywnd","",WS_VISIBLE|WS_POPUP,0,0,GetSystemMetrics(SM_CXSCREEN),GetSystemMetrics(SM_CYSCREEN),NULL,NULL,g_hInstance,0);
-}
 
 static void DD_RestoreBkgndSettings()
 {
@@ -512,12 +440,6 @@ void DD_CreateSurfaces(int w, int h, int fsh, int fs, int fsbpp, int flip, int d
       ddrval = g_lpddsOverlay->UpdateOverlay(&rs, g_lpddsPrimary, &rd, dwUpdateFlags, &ovfx);
       if(!FAILED(ddrval)) g_overlay_init_ok=1;
     }
-  }
-
-  if(g_fs && fsovl) 
-  {
-    g_fs_height=fsh>>dbl;
-    DD_CreateFullscreenOverlayWindow();
   }
 
 	//LeaveCriticalSection(&g_cs);
@@ -1439,24 +1361,6 @@ int DDraw_PickMode(int *w, int *h, int *bpp)
 double DDraw_translatePoint(POINT p, int isY)
 {
   double v=0.0;
-  if(g_fs && g_overlay_init_ok && hwndOverlayWnd && IsWindow(hwndOverlayWnd)) 
-  {
-    RECT r;
-    ScreenToClient(hwndOverlayWnd,&p);
-    GetClientRect(hwndOverlayWnd,&r);
-    if (isY) 
-    {
-      if (r.bottom>0)
-        v=p.y/(double)(r.bottom*0.5) - 1.0;
-    }
-    else
-    {
-      if (r.right>0)
-        v=p.x/(double)(r.right*0.5) - 1.0;
-    }
-  }
-  else
-  {
     ScreenToClient(g_hwnd,&p);
  
     if (isY) 
@@ -1469,7 +1373,6 @@ double DDraw_translatePoint(POINT p, int isY)
       if (g_dsw>0)
         v=p.x/(double)(g_dsw*0.5) - 1.0;
     }
-  }
   //if (v > 1.0) v=1.0;
   //if (v < -1.0) v=-1.0;
   return v;

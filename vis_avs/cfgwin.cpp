@@ -52,7 +52,6 @@ static int treeview_hack;
 static HTREEITEM g_hroot;
 
 extern int g_config_smp_mt,g_config_smp;
-extern struct winampVisModule *g_mod;
 extern int cfg_cancelfs_on_deactivate;
 
 HWND g_debugwnd;

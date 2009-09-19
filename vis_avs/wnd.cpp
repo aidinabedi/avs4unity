@@ -67,7 +67,6 @@ char g_title[2048];
 #define ID_VIS_PREV                     40383
 #define ID_VIS_RANDOM                   40384
 
-struct winampVisModule *g_mod;
 //extern volatile int g_ThreadQuit;
 extern int /*g_preset_dirty,*/ config_prompt_save_preset, config_reuseonresize;
 int g_saved_preset_dirty;
@@ -157,41 +156,6 @@ void WritePreset(int preset)
 }
 
 
-void SetTransparency(HWND hWnd, int enable, int amount)
-{
-#ifdef WA2_EMBED
-  // disable transparency if hosted in gen_ff
-  HWND w = myWindowState.me;
-  while (GetWindowLong(w, GWL_STYLE) & WS_CHILD) w = GetParent(w);
-  char classname[256];
-  GetClassName(w, classname, 255); classname[255] = 0;
-  if (!stricmp(classname, "BaseWindow_RootWnd")) return;
-  // --
-#endif
-  
-	DWORD dwLong;
-	HINSTANCE h;
-	void (__stdcall *a)(HWND h, int a, int b, int c);
-
-  hWnd=GetParent(hWnd);
-
-	dwLong = GetWindowLong(hWnd, GWL_EXSTYLE);
-	if(amount==255||!enable) {
-		if(dwLong&WS_EX_LAYERED)
-			SetWindowLong(hWnd, GWL_EXSTYLE, dwLong & ~WS_EX_LAYERED);
-	} else {
-		if(!(dwLong&WS_EX_LAYERED))
-			SetWindowLong(hWnd, GWL_EXSTYLE, dwLong | WS_EX_LAYERED);
-		h=LoadLibrary("USER32.DLL");
-		if(h!=NULL) {
-			a=(void (__stdcall *)(HWND,int,int,int))GetProcAddress(h,"SetLayeredWindowAttributes");
-			if(a!=NULL) 
-				a(hWnd, RGB(0,0,0), amount, LWA_ALPHA);
-			FreeLibrary(h);
-		}
-	}
-}
-
 char *extension(char *fn) 
 {
   char *s = fn + strlen(fn);
@@ -201,154 +165,15 @@ char *extension(char *fn)
   return (s+1);
 }
 
-static int last_windowed_w, last_windowed_h;
-void Wnd_GoWindowed(HWND hwnd)
-{
-  if (DDraw_IsFullScreen())
-  {
-#ifdef WA2_EMBED
-  SendMessage(g_mod->hwndParent,WM_WA_IPC,0,IPC_SET_VIS_FS_FLAG);
-#endif
-#ifdef WA3_COMPONENT
-		DDraw_SetFullScreen(0,cfg_w,cfg_h,cfg_fs_d&2,0);
-    if (last_parent) 
-    {
-      ShowWindow(last_parent,SW_SHOWNA);
-      SetParent(hwnd,last_parent);
-      SetWindowLong(hwnd,GWL_STYLE,WS_VISIBLE|WS_CHILD);
-    }
-    last_parent=0;
-#elif !defined(WA2_EMBED)
-		DDraw_SetFullScreen(0,cfg_w-7-6,cfg_h-15-5,cfg_fs_d&2,0);
-#else
-    SetParent(hwnd,myWindowState.me);
-    SetWindowLong(hwnd,GWL_STYLE,WS_VISIBLE|WS_CHILDWINDOW|WS_CLIPCHILDREN|WS_CLIPSIBLINGS|WS_OVERLAPPED);
-		DDraw_SetFullScreen(0,last_windowed_w,last_windowed_h,cfg_fs_d&2,0);
-    HWND w = myWindowState.me;
-    while (GetWindowLong(w, GWL_STYLE) & WS_CHILD) w = GetParent(w);
-    ShowWindow(w,SW_SHOWNA);
-#endif
-
-		if (cfg_cancelfs_on_deactivate) ShowCursor(TRUE);
-    int tm=(GetWindowLong(g_mod->hwndParent,GWL_EXSTYLE)&WS_EX_TOPMOST)==WS_EX_TOPMOST;
-
-#ifdef WA3_COMPONENT
-    SetWindowPos(hwnd,tm?HWND_TOPMOST:HWND_NOTOPMOST,0,0,cfg_w,cfg_h,SWP_NOACTIVATE);
-    SetTimer(hwnd,66,500,NULL);
-#elif !defined(WA2_EMBED)
-    SetWindowPos(hwnd,tm?HWND_TOPMOST:HWND_NOTOPMOST,cfg_x,cfg_y,cfg_w,cfg_h,SWP_NOACTIVATE);
-#else
-    PostMessage(GetParent(hwnd),WM_SIZE,0,0);
-#endif
-
-		SetTransparency(hwnd,cfg_trans,cfg_trans_amount);
-
-    SetTimer(hwnd,88,100,NULL);
-  }
-}
-
-void Wnd_GoFullScreen(HWND hwnd)
-{
-  if (!DDraw_IsFullScreen())
-  {
-
-#ifdef WA2_EMBED
-    if (SendMessage(g_mod->hwndParent,WM_WA_IPC,0,IPC_IS_PLAYING_VIDEO)>1)
-    {
-      PostMessage(hwnd,WM_USER+1667,1,2);
-      return;
-    }
-#endif
-
-    extern int cfg_fs_use_overlay;
-#ifdef WA2_EMBED
-    RECT r;
-    GetClientRect(hwnd,&r);
-    last_windowed_w=r.right;
-    last_windowed_h=r.bottom;
-#endif
-
-    if (!DDraw_IsMode(cfg_fs_w,cfg_fs_h,cfg_fs_bpp))
-    {
-      int DDraw_PickMode(int *w, int *h, int *bpp);
-      if (!DDraw_PickMode(&cfg_fs_w,&cfg_fs_h,&cfg_fs_bpp))
-        return;
-    }
-
-    {
-#ifdef WA2_EMBED
-      SendMessage(g_mod->hwndParent,WM_WA_IPC,1,IPC_SET_VIS_FS_FLAG);
-#endif
-      RECT tr;
-      if (inWharf) 
-      {
-        need_redock=1;
-        //toggleWharfAmpDock(hwnd);
-      }
-	    SetTransparency(hwnd,0,0);
-			if (cfg_cancelfs_on_deactivate) ShowCursor(FALSE);
-      GetWindowRect(hwnd,&tr);
-      if (cfg_cfgwnd_open) ShowWindow(g_hwndDlg,SW_HIDE);
-			if (!cfg_fs_use_overlay) 
-      {
-#ifdef WA3_COMPONENT
-        if (!last_parent) 
-        {
-          SetWindowLong(hwnd,GWL_STYLE,WS_VISIBLE);
-          last_parent=SetParent(hwnd,NULL);
-          ShowWindow(last_parent,SW_HIDE);
-        }
-#elif defined(WA2_EMBED)
-        SetWindowLong(hwnd,GWL_STYLE,WS_VISIBLE);
-        SetParent(hwnd,NULL);
-        HWND w = myWindowState.me;
-        while (GetWindowLong(w, GWL_STYLE) & WS_CHILD) w = GetParent(w);
-        ShowWindow(w,SW_HIDE);
-#endif
-        DDraw_SetFullScreen(1,cfg_fs_w,cfg_fs_h,cfg_fs_d&1,cfg_fs_bpp);
-        RECT r;
-        //my_getViewport(&r,&tr);
-        SetWindowPos(hwnd,HWND_TOPMOST,r.left,r.top,cfg_fs_w,cfg_fs_h,0);
-        SetForegroundWindow(hwnd);
-      }
-			else 
-      {
-#if defined(WA2_EMBED)
-        SetWindowLong(hwnd,GWL_STYLE,WS_VISIBLE);
-        SetParent(hwnd,NULL);
-        HWND w = myWindowState.me;
-        while (GetWindowLong(w, GWL_STYLE) & WS_CHILD) w = GetParent(w);
-        ShowWindow(w,SW_HIDE);
-#endif
-        DDraw_SetFullScreen(1,cfg_fs_w,cfg_fs_h,cfg_fs_d&1,0);
-      }
-		}
-#if 0
-    else 
-    {
-      if (!cfg_cfgwnd_open) 
-      {
-			  ShowWindow(g_hwndDlg,SW_SHOWNA);
-        CfgWnd_RePopIfNeeded();
-        cfg_cfgwnd_open=1;
-			}
-      SendMessage(g_hwndDlg,WM_COMMAND,IDM_FULLSCREEN,0);
-    }
-#endif
-  }
-}
-
 int g_config_smp_mt=2,g_config_smp=0;
 static const char *INI_FILE;
 static std::string INI_FILE_BUF;
-
-static LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
 
 int cfg_fs_dblclk=1;
 
 int Wnd_Init(struct winampVisModule *this_mod)
 {
-	g_mod = this_mod;
+	//g_mod = this_mod;
 	g_hwnd = this_mod->hwndParent;
 	DDraw_Init();
 
