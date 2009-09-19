@@ -114,7 +114,7 @@ int  C_THISCLASS::save_config(unsigned char *data)
 
 C_THISCLASS::C_THISCLASS()
 {
-  InitializeCriticalSection(&rcs);
+  //InitializeCriticalSection(&rcs);
   AVS_EEL_INITINST();
 
   memset(codehandle,0,sizeof(codehandle));
@@ -139,7 +139,7 @@ C_THISCLASS::~C_THISCLASS()
   }
   AVS_EEL_QUITINST();
 
-  DeleteCriticalSection(&rcs);
+  //DeleteCriticalSection(&rcs);
 }
 
 	
@@ -150,7 +150,7 @@ int C_THISCLASS::render(char visdata[2][2][576], int isBeat, int *framebuffer, i
   {
     int err=0;
     int x;
-    EnterCriticalSection(&rcs);
+    //EnterCriticalSection(&rcs);
     if (!var_b || g_reset_vars_on_recompile)
     {
       clearVars();
@@ -168,7 +168,7 @@ int C_THISCLASS::render(char visdata[2][2][576], int isBeat, int *framebuffer, i
       freeCode(codehandle[x]);
       codehandle[x]=compileCode(effect_exp[x].get());
     }
-    LeaveCriticalSection(&rcs);
+    //LeaveCriticalSection(&rcs);
   }
   *var_w=w;
   *var_h=h;
@@ -362,13 +362,13 @@ static BOOL CALLBACK g_DlgProc(HWND hwndDlg, UINT uMsg, WPARAM wParam,LPARAM lPa
       }
       if (!isstart && (LOWORD(wParam) == IDC_EDIT1||LOWORD(wParam) == IDC_EDIT2||LOWORD(wParam) == IDC_EDIT3) && HIWORD(wParam) == EN_CHANGE)
       {
-        EnterCriticalSection(&g_this->rcs);
+        //EnterCriticalSection(&g_this->rcs);
         g_this->effect_exp[0].get_from_dlgitem(hwndDlg,IDC_EDIT1);
         g_this->effect_exp[1].get_from_dlgitem(hwndDlg,IDC_EDIT2);
         g_this->effect_exp[2].get_from_dlgitem(hwndDlg,IDC_EDIT3);
         g_this->need_recompile=1;
 				if (LOWORD(wParam) == IDC_EDIT1) g_this->inited = 0;
-        LeaveCriticalSection(&g_this->rcs);
+        //LeaveCriticalSection(&g_this->rcs);
       }
     return 0;
   }

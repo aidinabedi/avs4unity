@@ -173,7 +173,7 @@ void DD_CreateSurfaces(int w, int h, int fsh, int fs, int fsbpp, int flip, int d
   int fb_save[64*65+1];
   int fb_save_use=0;
 #endif
-  EnterCriticalSection(&g_cs);
+  //EnterCriticalSection(&g_cs);
   nodraw=0;
   if (g_lpDD)
   {
@@ -238,7 +238,7 @@ void DD_CreateSurfaces(int w, int h, int fsh, int fs, int fsbpp, int flip, int d
 	{
     g_lpDD=NULL;
 		MessageBox(g_hwnd,"Error creating ddraw object","DDraw",0);
-    LeaveCriticalSection(&g_cs);
+    //LeaveCriticalSection(&g_cs);
 		return;
 	}
 	if (fs && !fsovl)
@@ -326,7 +326,7 @@ void DD_CreateSurfaces(int w, int h, int fsh, int fs, int fsbpp, int flip, int d
         g_lpRenderSurf[0]=0;
       }
 			g_lpRenderSurf[wh]=0;
-			LeaveCriticalSection(&g_cs);
+			//LeaveCriticalSection(&g_cs);
 			return;
 		}
 
@@ -520,7 +520,7 @@ void DD_CreateSurfaces(int w, int h, int fsh, int fs, int fsbpp, int flip, int d
     DD_CreateFullscreenOverlayWindow();
   }
 
-	LeaveCriticalSection(&g_cs);
+	//LeaveCriticalSection(&g_cs);
 }
 
 #ifndef NO_MMX
@@ -749,7 +749,7 @@ bool CopyRGBSurfaceToYUVSurface(
 
 int DDraw_Init()
 {
-	InitializeCriticalSection(&g_cs);
+	//InitializeCriticalSection(&g_cs);
 	return 0;
 
 }
@@ -773,7 +773,7 @@ void DDraw_Quit(void)
     g_lpDD=NULL;
     DD_RestoreBkgndSettings();
   }
-	DeleteCriticalSection(&g_cs);
+	//DeleteCriticalSection(&g_cs);
 }
 
 
@@ -799,26 +799,26 @@ void DDraw_Enter(int *w, int *h, int **fb1, int **fb2)
     *fb1=*fb2=0;
     return;
   }
-  EnterCriticalSection(&g_cs);
+  //EnterCriticalSection(&g_cs);
 	*w=g_w;
 	*h=g_h;
   if (!g_lpDD || !g_lpRenderSurf[0] || !g_lpRenderSurf[1]) 
   {
     *fb1=*fb2=0;
-    LeaveCriticalSection(&g_cs);
+    //LeaveCriticalSection(&g_cs);
     return;
   }
 	if ((han = g_lpRenderSurf[0]->Lock(NULL,&d,DDLOCK_WAIT,NULL)) != DD_OK) 
 	{
     *fb1=*fb2=0;
-    LeaveCriticalSection(&g_cs);
+    //LeaveCriticalSection(&g_cs);
 		return;
 	}
 	if ((han = g_lpRenderSurf[1]->Lock(NULL,&d2,DDLOCK_WAIT,NULL)) != DD_OK) 
 	{
     g_lpRenderSurf[0]->Unlock(d.lpSurface);
     *fb1=*fb2=0;
-    LeaveCriticalSection(&g_cs);
+    //LeaveCriticalSection(&g_cs);
 		return;
 	}
 	*fb1=(int*)(g_lpsurf[0]=d.lpSurface);
@@ -844,9 +844,9 @@ static void do_gettitle()
   {
     char this_title[2048]={0,};
 #ifdef WA3_COMPONENT
-    EnterCriticalSection(&g_title_cs);
+    //EnterCriticalSection(&g_title_cs);
     strcpy(this_title,g_title);
-    LeaveCriticalSection(&g_title_cs);
+    //LeaveCriticalSection(&g_title_cs);
 #else
     char *p;
 	  if (IsWindow(hwnd_WinampParent)) 
@@ -1330,7 +1330,8 @@ abort_thingy:
       g_lpRenderSurf[which^1]->ReleaseDC(in2);
 	}
 endfunc:
-  LeaveCriticalSection(&g_cs);
+  //LeaveCriticalSection(&g_cs);
+  return;
 }
 
 

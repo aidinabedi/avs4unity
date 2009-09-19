@@ -210,7 +210,7 @@ __declspec ( naked ) void _asm_setmousepos_end(void) {}
 
 void AVS_EEL_IF_init()
 {
-  InitializeCriticalSection(&g_eval_cs);
+  //InitializeCriticalSection(&g_eval_cs);
   NSEEL_init();
   NSEEL_addfunction("getosc",3,(int)_asm_getosc,(int)_asm_getosc_end-(int)_asm_getosc);
   NSEEL_addfunction("getspec",3,(int)_asm_getspec,(int)_asm_getspec_end-(int)_asm_getspec);
@@ -225,7 +225,7 @@ void AVS_EEL_IF_init()
 void AVS_EEL_IF_quit()
 {
   gmegabuf_cleanup();
-  DeleteCriticalSection(&g_eval_cs);
+  //DeleteCriticalSection(&g_eval_cs);
   NSEEL_quit();
 }
 
@@ -249,7 +249,7 @@ static void movestringover(char *str, int amount)
 int AVS_EEL_IF_Compile(int context, char *code)
 {
   NSEEL_CODEHANDLE ret;
-  EnterCriticalSection(&g_eval_cs);
+  //EnterCriticalSection(&g_eval_cs);
   ret=NSEEL_code_compile((NSEEL_VMCTX)context,code);
   if (!ret)
   {
@@ -267,7 +267,7 @@ int AVS_EEL_IF_Compile(int context, char *code)
       }
     }
   }
-  LeaveCriticalSection(&g_eval_cs);
+  //LeaveCriticalSection(&g_eval_cs);
   return (int)ret;
 }
 
@@ -275,11 +275,11 @@ void AVS_EEL_IF_Execute(void *handle, char visdata[2][2][576])
 {
   if (handle)
   {
-    EnterCriticalSection(&g_eval_cs);
+    //EnterCriticalSection(&g_eval_cs);
     g_evallib_visdata=(char*)visdata;
     NSEEL_code_execute((NSEEL_CODEHANDLE)handle);
     g_evallib_visdata=NULL;
-    LeaveCriticalSection(&g_eval_cs);
+    //LeaveCriticalSection(&g_eval_cs);
   }
 }
 

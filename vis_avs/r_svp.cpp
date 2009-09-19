@@ -84,7 +84,7 @@ int  C_THISCLASS::save_config(unsigned char *data)
 
 void C_THISCLASS::SetLibrary()
 {
-  EnterCriticalSection(&cs);
+  //EnterCriticalSection(&cs);
   if (hLibrary)
   {
     if (vi) vi->SaveSettings("avs.ini");
@@ -93,7 +93,7 @@ void C_THISCLASS::SetLibrary()
     hLibrary=NULL;
   }
 
-  if (!m_library[0]) { LeaveCriticalSection(&cs); return; }
+  if (!m_library[0]) { /*LeaveCriticalSection(&cs);*/ return; }
 
   char buf1[MAX_PATH];
   strcpy(buf1,g_path);
@@ -119,13 +119,13 @@ void C_THISCLASS::SetLibrary()
   if (vi) { 
     vi->OpenSettings("avs.ini"); vi->Initialize(); 
   }
-  LeaveCriticalSection(&cs); 
+  //LeaveCriticalSection(&cs); 
 }
 
 
 C_THISCLASS::C_THISCLASS()
 {
-  InitializeCriticalSection(&cs);
+  //InitializeCriticalSection(&cs);
   m_library[0]=0;
   hLibrary=0;
   vi=NULL;
@@ -135,13 +135,13 @@ C_THISCLASS::~C_THISCLASS()
 {
   if (vi) vi->SaveSettings("avs.ini");
   if (hLibrary) FreeLibrary(hLibrary);
-  DeleteCriticalSection(&cs);
+  //DeleteCriticalSection(&cs);
 }
 	
 int C_THISCLASS::render(char visdata[2][2][576], int isBeat, int *framebuffer, int *fbout, int w, int h)
 {
   if (isBeat&0x80000000) return 0;
-  EnterCriticalSection(&cs);
+  //EnterCriticalSection(&cs);
   if (vi)
   {
  //   if (vi->lRequired & VI_WAVEFORM)
@@ -168,7 +168,7 @@ int C_THISCLASS::render(char visdata[2][2][576], int isBeat, int *framebuffer, i
     vd.MillSec=GetTickCount();
     vi->Render((unsigned long *)framebuffer,w,h,w,&vd);
   }
-  LeaveCriticalSection(&cs);
+  //LeaveCriticalSection(&cs);
   return 0;
 }
 

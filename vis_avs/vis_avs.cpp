@@ -66,8 +66,8 @@ char *verstr=
 
 static unsigned int WINAPI RenderThread(LPVOID a);
 
-HANDLE g_hThread;
-volatile int g_ThreadQuit;
+//HANDLE g_hThread;
+//volatile int g_ThreadQuit;
 
 #ifndef WA3_COMPONENT
 static CRITICAL_SECTION g_cs;
@@ -81,18 +81,6 @@ static int g_is_beat;
 char g_path[1024];
 
 int beat_peak1,beat_peak2, beat_cnt,beat_peak1_peak;
-
-void main_setRenderThreadPriority()
-{
-  int prios[]={
-    GetThreadPriority(GetCurrentThread()),
-    THREAD_PRIORITY_IDLE,
-    THREAD_PRIORITY_LOWEST,
-    THREAD_PRIORITY_NORMAL,
-    THREAD_PRIORITY_HIGHEST,
-  };
-	SetThreadPriority(g_hThread,prios[cfg_render_prio]);
-}
 
 #if 0//syntax highlighting
 HINSTANCE hRich;
@@ -130,10 +118,10 @@ int avs_init(struct winampVisModule *this_mod)
   CreateDirectory(g_path,NULL);
 
 #ifndef WA3_COMPONENT
-	InitializeCriticalSection(&g_cs);
+	//InitializeCriticalSection(&g_cs);
 #endif
-	InitializeCriticalSection(&g_render_cs);
-	g_ThreadQuit=0;
+	//InitializeCriticalSection(&g_render_cs);
+	//g_ThreadQuit=0;
 	g_visdata_pstat=1;
 
 	AVS_EEL_IF_init();
@@ -157,8 +145,8 @@ int avs_init(struct winampVisModule *this_mod)
 
 	CfgWnd_Create(this_mod);
 
-	g_hThread=(HANDLE)_beginthreadex(NULL,0,RenderThread,0,0,(unsigned int *)&id);
-  main_setRenderThreadPriority();
+	//g_hThread=(HANDLE)_beginthreadex(NULL,0,RenderThread,0,0,(unsigned int *)&id);
+  //main_setRenderThreadPriority();
 
   return 0;
 }
@@ -175,13 +163,13 @@ int avs_render(struct winampVisModule *this_mod)
 {
 #ifndef WA3_COMPONENT
 	int x,avs_beat=0,b;
-	if (g_ThreadQuit) return 1;
-	EnterCriticalSection(&g_cs);
-	if (g_ThreadQuit)
-	{
-		LeaveCriticalSection(&g_cs);
-		return 1;
-	}
+	//if (g_ThreadQuit) return 1;
+	//EnterCriticalSection(&g_cs);
+	//if (g_ThreadQuit)
+	//{
+		//LeaveCriticalSection(&g_cs);
+		//return 1;
+	//}
 	if (g_visdata_pstat)
 		for (x = 0; x<  576*2; x ++)
 			g_visdata[0][0][x]=g_logtab[(unsigned char)this_mod->spectrumData[0][x]];
@@ -236,26 +224,52 @@ int avs_render(struct winampVisModule *this_mod)
 	b=refineBeat(avs_beat);
 	if (b) g_is_beat=1;
 	g_visdata_pstat=0;
-	LeaveCriticalSection(&g_cs);
+	//LeaveCriticalSection(&g_cs);
 #endif
-  return 0;
+
+#ifdef LASER
+    g_laser_linelist->ClearLineList();
+#endif
+
+	int w,h,*fb=NULL, *fb2=NULL,beat=0;
+	int s = 0;
+
+	g_visdata_pstat=1;
+	beat=g_is_beat;
+	g_is_beat=0;
+
+	char vis_data[2][2][576];
+	memcpy(&vis_data[0][0][0],&g_visdata[0][0][0],576*2*2);
+
+	DDraw_Enter(&w,&h,&fb,&fb2);
+
+	int t=g_render_transition->render(vis_data,beat,s?fb2:fb,s?fb:fb2,w,h);
+	if (t&1) s^=1;
+	DDraw_Exit(s);
+
+#ifdef LASER
+    s=0;
+    memset(fb,0,w*h*sizeof(int));
+    LineDrawList(g_laser_linelist,fb,w,h);
+#endif
+	return 0;
 }
 
 void avs_quit(struct winampVisModule *this_mod)
 {
 #define DS(x) 
   //MessageBox(this_mod->hwndParent,x,"AVS Debug",MB_OK)
-	if (g_hThread)
+	//if (g_hThread)
 	{
-    DS("Waitin for thread to quit\n");
-		g_ThreadQuit=1;
-		if (WaitForSingleObject(g_hThread,10000) != WAIT_OBJECT_0)
-		{
-      DS("Terminated thread (BAD!)\n");
+    //DS("Waitin for thread to quit\n");
+		//g_ThreadQuit=1;
+		//if (WaitForSingleObject(g_hThread,10000) != WAIT_OBJECT_0)
+		//{
+      //DS("Terminated thread (BAD!)\n");
 			//MessageBox(NULL,"error waiting for thread to quit","a",MB_TASKMODAL);
-      TerminateThread(g_hThread,0);
-		}
-    DS("Thread done... calling ddraw_quit\n");
+      //TerminateThread(g_hThread,0);
+		//}
+    DS("Calling ddraw_quit\n");
 		DDraw_Quit();
 
     DS("Calling cfgwnd_destroy\n");
@@ -266,18 +280,18 @@ void avs_quit(struct winampVisModule *this_mod)
     DS("Calling wnd_quit\n");
 		Wnd_Quit();
 
-    DS("closing thread handle\n");
-		CloseHandle(g_hThread);
-		g_hThread=NULL;
+    //DS("closing thread handle\n");
+		//CloseHandle(g_hThread);
+		//g_hThread=NULL;
 
     DS("calling eel quit\n");
     AVS_EEL_IF_quit();
 
     DS("cleaning up critsections\n");
 #ifndef WA3_COMPONENT
-		DeleteCriticalSection(&g_cs);
+		//DeleteCriticalSection(&g_cs);
 #endif
-		DeleteCriticalSection(&g_render_cs);    
+		//DeleteCriticalSection(&g_render_cs);    
 
     DS("smp_cleanupthreads\n");
     C_RenderListClass::smp_cleanupthreads();
@@ -319,85 +333,22 @@ static unsigned int WINAPI RenderThread(LPVOID a)
 	int framedata_pos=0;
   int s=0;
 	char vis_data[2][2][576];
-  FILETIME ft;
-  GetSystemTimeAsFileTime(&ft);
-  srand(ft.dwLowDateTime|ft.dwHighDateTime^GetCurrentThreadId());
-	while (!g_ThreadQuit)
+
+	//while (!g_ThreadQuit)
 	{
 		int w,h,*fb=NULL, *fb2=NULL,beat=0;
-#ifdef WA3_COMPONENT
-    char visdata[576*2*2];
-    int ret=api->core_getVisData(0,visdata,sizeof(visdata));
 
-		if (!ret) 
-    {
-      memset(&vis_data[0][0][0],0,576*2*2);
-      beat=0;
-    }
-    else
-    {
-      int x;
-      unsigned char *v=(unsigned char *)visdata;
-		  for (x = 0; x < 576*2; x ++)
-			  vis_data[0][0][x]=g_logtab[*v++];
-		  for (x = 0; x < 576*2; x ++)
-        ((unsigned char *)vis_data[1][0])[x]=*v++;
-
-      v=(unsigned char *)visdata+1152;
-	    {
-        int lt[2]={0,0};
-        int ch;
-        for (ch = 0; ch < 2; ch ++)
-        {
-          for (x = 0; x < 576; x ++)
-          {
-            int r=*v++^128;
-            r-=128;
-            if (r<0)r=-r;
-            lt[ch]+=r;
-          }
-        }
-        lt[0]=max(lt[0],lt[1]);
-
-        beat_peak1=(beat_peak1*125+beat_peak2*3)/128;
-        beat_cnt++;
-
-        if (lt[0] >= (beat_peak1*34)/32 && lt[0] > (576*16)) 
-        {
-          if (beat_cnt>0)
-          {
-            beat_cnt=0;
-            beat=1;
-          }
-          beat_peak1=(lt[0]+beat_peak1_peak)/2;
-          beat_peak1_peak=lt[0];
-        }
-        else if (lt[0] > beat_peak2)
-        {
-          beat_peak2=lt[0];
-        } 
-        else beat_peak2=(beat_peak2*14)/16;
-
-	    }
-//     EnterCriticalSection(&g_title_cs);
-	    beat=refineBeat(beat);
-//      LeaveCriticalSection(&g_title_cs);
-    }
-
-
-#else
-		EnterCriticalSection(&g_cs);
+		//EnterCriticalSection(&g_cs);
 		memcpy(&vis_data[0][0][0],&g_visdata[0][0][0],576*2*2);
 		g_visdata_pstat=1;
 		beat=g_is_beat;
 		g_is_beat=0;
-		LeaveCriticalSection(&g_cs);
-#endif
+		//LeaveCriticalSection(&g_cs);
 
-    if (!g_ThreadQuit)
+    //if (!g_ThreadQuit)
     {
-		  if (!g_in_destroy) DDraw_Enter(&w,&h,&fb,&fb2);
-      else break;
+		  //if (!g_in_destroy) DDraw_Enter(&w,&h,&fb,&fb2);
+      //else break;
 		  if (fb&&fb2)
 		  {
         extern int g_dlg_w, g_dlg_h, g_dlg_fps;
@@ -405,9 +356,9 @@ static unsigned int WINAPI RenderThread(LPVOID a)
         g_laser_linelist->ClearLineList();
 #endif
 
-	      EnterCriticalSection(&g_render_cs);
-				int t=g_render_transition->render(vis_data,beat,s?fb2:fb,s?fb:fb2,w,h);
-	      LeaveCriticalSection(&g_render_cs);
+	    //EnterCriticalSection(&g_render_cs);
+		int t=g_render_transition->render(vis_data,beat,s?fb2:fb,s?fb:fb2,w,h);
+	    //LeaveCriticalSection(&g_render_cs);
         if (t&1) s^=1;
 
 #ifdef LASER

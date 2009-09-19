@@ -174,7 +174,7 @@ C_THISCLASS::C_THISCLASS()
   effect_exp[2].assign("");
   effect_exp[3].assign("");
   effect_exp_ch=1;
-  InitializeCriticalSection(&rcs);
+  //InitializeCriticalSection(&rcs);
 }
 
 C_THISCLASS::~C_THISCLASS()
@@ -187,7 +187,7 @@ C_THISCLASS::~C_THISCLASS()
   codehandle_b=0;
   codehandle_i=0;
   codehandle_f=0;
-  DeleteCriticalSection(&rcs);
+  //DeleteCriticalSection(&rcs);
 }
 
 void C_THISCLASS::dopoint(float &x, float &y, char visdata[2][2][576], int &color)
@@ -237,7 +237,7 @@ int C_THISCLASS::render(char visdata[2][2][576], int isBeat, int *framebuffer, i
 
   if (effect_exp_ch || !codehandle)
   {
-    EnterCriticalSection(&rcs);
+    //EnterCriticalSection(&rcs);
     memset(vars,0,sizeof(vars));
     resetVars(vars);
     if (codehandle) freeCode(codehandle);
@@ -250,7 +250,7 @@ int C_THISCLASS::render(char visdata[2][2][576], int isBeat, int *framebuffer, i
     codehandle_b=compileCode(effect_exp[3].get());
     effect_exp_ch=0;
     resetVars(NULL);
-    LeaveCriticalSection(&rcs);
+    //LeaveCriticalSection(&rcs);
     executeCode(codehandle_i,visdata);
   }
   executeCode(codehandle_f,visdata);
@@ -308,21 +308,21 @@ static BOOL CALLBACK g_DlgProc(HWND hwndDlg, UINT uMsg, WPARAM wParam,LPARAM lPa
       {
         if (!isstart)
         {
-          EnterCriticalSection(&g_this->rcs);
+          //EnterCriticalSection(&g_this->rcs);
           g_this->effect_exp[0].get_from_dlgitem(hwndDlg,IDC_EDIT1);
           g_this->effect_exp[1].get_from_dlgitem(hwndDlg,IDC_EDIT2);
           g_this->effect_exp[2].get_from_dlgitem(hwndDlg,IDC_EDIT3);
           g_this->effect_exp[3].get_from_dlgitem(hwndDlg,IDC_EDIT4);
           g_this->effect_exp_ch=1;
-          LeaveCriticalSection(&g_this->rcs);
+          //LeaveCriticalSection(&g_this->rcs);
         }
       }
       if (LOWORD(wParam) == IDC_CHECK3)
       {
-          EnterCriticalSection(&g_this->rcs);
+          //EnterCriticalSection(&g_this->rcs);
           g_this->rectangular=IsDlgButtonChecked(hwndDlg,IDC_CHECK3)?1:0;
           g_this->effect_exp_ch=1;
-          LeaveCriticalSection(&g_this->rcs);
+          //LeaveCriticalSection(&g_this->rcs);
       }
     return 0;
 	}
