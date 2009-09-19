@@ -31,7 +31,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <stdio.h>
 #include <commctrl.h>
 #include <process.h>
-#include "draw.h"
+//#include "draw.h"
 #include "resource.h"
 #include "cfgwnd.h"
 #include "r_defs.h"
@@ -123,7 +123,7 @@ int C_RenderTransitionClass::LoadPreset(char *file, int which, C_UndoItem *item)
   {
     if (WaitForSingleObject(initThread,0)==WAIT_TIMEOUT) 
     {
-      DDraw_SetStatusText("loading [wait]...",1000*100);
+      //DDraw_SetStatusText("loading [wait]...",1000*100);
       return 2;
     }
     CloseHandle(initThread);
@@ -153,13 +153,13 @@ int C_RenderTransitionClass::LoadPreset(char *file, int which, C_UndoItem *item)
     {
       g_render_effects2->clearRenders();
     }
-    if (!r && l_w && l_h && (cfg_transitions2&which) && ((cfg_transitions2&128)||DDraw_IsFullScreen()))
+    if (!r && l_w && l_h && (cfg_transitions2&which) && (cfg_transitions2&128))
     {
       DWORD id;
       last_which=which;
       _dotransitionflag=1;
       initThread=(HANDLE)_beginthreadex(NULL,0,m_initThread,(LPVOID)this,0,(unsigned int*)&id);
-      DDraw_SetStatusText("loading...",1000*100);
+      //DDraw_SetStatusText("loading...",1000*100);
     }
     else
     {
@@ -169,9 +169,7 @@ int C_RenderTransitionClass::LoadPreset(char *file, int which, C_UndoItem *item)
 
     if (r)
     {
-      char s[MAX_PATH*2];
-      wsprintf(s,"error loading: %s",scanstr_back(last_file,"\\",last_file-1)+1);
-      DDraw_SetStatusText(s);
+      printf("error loading: %s",scanstr_back(last_file,"\\",last_file-1)+1);
       _dotransitionflag=3;
     }
     C_UndoStack::clear();
@@ -211,7 +209,8 @@ int C_RenderTransitionClass::render(char visdata[2][2][576], int isBeat, int *fr
     extern int need_repop;
     extern char *extension(char *fn);
     need_repop=1;
-    PostMessage(g_hwndDlg,WM_USER+20,0,0);
+    //PostMessage(g_hwndDlg,WM_USER+20,0,0);
+	/*
     if (!notext && stricmp("aph",extension(last_file)))
     {
       char buf[512];
@@ -221,6 +220,7 @@ int C_RenderTransitionClass::render(char visdata[2][2][576], int isBeat, int *fr
       strcat(buf," ");
       DDraw_SetStatusText(buf);
     }
+	*/
   }
 
 	if (!enabled) 

@@ -64,10 +64,6 @@ int is_aux_wnd=0;
 int config_prompt_save_preset=1,config_reuseonresize=1;
 //int g_preset_dirty;
 
-extern BOOL CALLBACK aboutProc(HWND hwndDlg, UINT uMsg, WPARAM wParam,LPARAM lParam);
-extern BOOL CALLBACK DlgProc_Bpm(HWND hwndDlg, UINT uMsg, WPARAM wParam,LPARAM lParam);
-extern int readyToLoadPreset(HWND parent, int isnew);
-
 extern char *extension(char *fn) ;
 
 int g_dlg_fps,g_dlg_w,g_dlg_h;
@@ -101,6 +97,10 @@ extern HWND g_hwnd;
 #ifdef WA2_EMBED
 #include "wa_ipc.h"
 extern embedWindowState myWindowState;
+#endif
+
+#ifndef WA2_EMBED
+int cfg_x=100, cfg_y=100, cfg_w=400, cfg_h=300;
 #endif
 
 /*
@@ -320,7 +320,6 @@ static BOOL CALLBACK DlgProc_Preset(HWND hwndDlg, UINT uMsg, WPARAM wParam,LPARA
           }
         return 0;
         case IDC_BUTTON2:
-          if (readyToLoadPreset(hwndDlg,0)) 
           {
             int w=SendDlgItemMessage(hwndDlg,IDC_COMBO1,CB_GETCURSEL,0,0);
             if (w != CB_ERR)
@@ -818,7 +817,6 @@ static void _insertintomenu(HMENU hMenu, int wid, int id, char *str)
 }
 static HTREEITEM g_dragsource_item,g_dragsource_parent, g_draglastdest, g_dragplace;
 static int g_dragplaceisbelow;
-extern int findInMenu(HMENU parent, HMENU sub, UINT id, char *buf, int buf_len);
 
 #define UNDO_TIMER_INTERVAL 333
 
@@ -996,7 +994,6 @@ static BOOL CALLBACK dlgProc(HWND hwndDlg, UINT uMsg, WPARAM wParam,LPARAM lPara
   static int presetTreeCount;
   extern int need_redock;
   extern int inWharf;
-  extern void toggleWharfAmpDock(HWND hwnd);
 
 	switch (uMsg)
 	{
@@ -1009,7 +1006,7 @@ static BOOL CALLBACK dlgProc(HWND hwndDlg, UINT uMsg, WPARAM wParam,LPARAM lPara
       {
         char buf[2048];
         buf[0]=0;
-        if (findInMenu(presetTreeMenu,(HMENU)wParam,0,buf,2048))
+        //if (findInMenu(presetTreeMenu,(HMENU)wParam,0,buf,2048))
         {
 		      HANDLE h;
 		      WIN32_FIND_DATA d;
@@ -1055,7 +1052,7 @@ static BOOL CALLBACK dlgProc(HWND hwndDlg, UINT uMsg, WPARAM wParam,LPARAM lPara
         if (inWharf)
         {
 #ifdef WA2_EMBED
-          toggleWharfAmpDock(g_hwnd);
+          //toggleWharfAmpDock(g_hwnd);
         }
 #else
           PostMessage(g_hwnd,WM_CLOSE,0,0);
@@ -1087,7 +1084,7 @@ static BOOL CALLBACK dlgProc(HWND hwndDlg, UINT uMsg, WPARAM wParam,LPARAM lPara
 		  if (need_redock)
       {
         need_redock=0;
-        toggleWharfAmpDock(g_hwnd);
+        //toggleWharfAmpDock(g_hwnd);
       }
       else
       {
@@ -1397,15 +1394,13 @@ static BOOL CALLBACK dlgProc(HWND hwndDlg, UINT uMsg, WPARAM wParam,LPARAM lPara
         case IDC_RRECT:
           if (HIWORD(wParam)==1) 
           {
-            toggleWharfAmpDock(g_hwnd);
+            //toggleWharfAmpDock(g_hwnd);
           }
         return 0;
         case IDM_HELP_DEBUGWND:
           if (!g_debugwnd) g_debugwnd=CreateDialog(g_hInstance,MAKEINTRESOURCE(IDD_DEBUG),g_hwnd,debugProc);
           ShowWindow(g_debugwnd,SW_SHOW);
         return 0;
-        case IDM_ABOUT:
-          DialogBox(g_hInstance,MAKEINTRESOURCE(IDD_DIALOG2),hwndDlg,aboutProc);
         return 0;
         case IDM_DISPLAY:
         case IDM_FULLSCREEN:
@@ -1540,7 +1535,7 @@ static BOOL CALLBACK dlgProc(HWND hwndDlg, UINT uMsg, WPARAM wParam,LPARAM lPara
               buf[0]=0;
               if (t >= preset_base)                
               {
-                if (findInMenu(presetTreeMenu,0,t,buf,2048))
+                //if (findInMenu(presetTreeMenu,0,t,buf,2048))
                 {
                   //preset
                   C_RenderListClass *r;
@@ -1630,7 +1625,6 @@ static BOOL CALLBACK dlgProc(HWND hwndDlg, UINT uMsg, WPARAM wParam,LPARAM lPara
 					}
 				return 0;
         case IDC_CLEAR:
-          if (readyToLoadPreset(hwndDlg,1))
           {
             if (g_render_transition->LoadPreset("",0) != 2)
               last_preset[0]=0;
@@ -1747,7 +1741,7 @@ static BOOL CALLBACK dlgProc(HWND hwndDlg, UINT uMsg, WPARAM wParam,LPARAM lPara
 						l.lpstrTitle = "Load Preset";
 						l.lpstrDefExt = "AVS";
 						l.Flags = OFN_HIDEREADONLY|OFN_EXPLORER; 	        
-						if (readyToLoadPreset(hwndDlg,0) && GetOpenFileName(&l)) 
+						if (GetOpenFileName(&l)) 
 						{
               int x=g_render_transition->LoadPreset(temp,0);
               if (x == 2) MessageBox(hwndDlg,"Still initializing previous preset","Load Preset",MB_OK);

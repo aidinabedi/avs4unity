@@ -1317,27 +1317,11 @@ abort_thingy:
     {
       if (!g_windowed_dsize)
       {
-#ifdef WA3_COMPONENT
         BitBlt(out,0,0,g_w-g_noshoww,g_h,in2?in2:in1,0,0,SRCCOPY);
-#else
-#ifndef WA2_EMBED
-        BitBlt(out,inWharf?0:7,inWharf?0:15,g_w-g_noshoww,g_h,in2?in2:in1,0,0,SRCCOPY);
-#else
-        BitBlt(out,0,0,g_w-g_noshoww,g_h,in2?in2:in1,0,0,SRCCOPY);
-#endif
-#endif
       }
       else
       {
-#ifdef WA3_COMPONENT
         StretchBlt(out,0,0,g_dsw,g_dsh,in2?in2:in1,0,0,g_w,g_h,SRCCOPY);
-#else
-#ifndef WA2_EMBED
-        StretchBlt(out,inWharf?0:7,inWharf?0:15,g_dsw,g_dsh,in2?in2:in1,0,0,g_w,g_h,SRCCOPY);
-#else
-        StretchBlt(out,0,0,g_dsw,g_dsh,in2?in2:in1,0,0,g_w,g_h,SRCCOPY);
-#endif
-#endif
       }
   		ReleaseDC(g_hwnd,out);
     }

@@ -31,7 +31,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "render.h"
 #include "timing.h"
 #include "undo.h"
-#include "wnd.h"
+//#include "wnd.h"
 #include "wa_ipc.h"
 #include "debug.h"
 #include <string>
@@ -69,6 +69,22 @@ int const mmx_blend4_zero=0;
 
 void Render_Init(HINSTANCE hDllInstance, const char* path)
 {
+
+#ifdef WA2_EMBED
+  if (SendMessage(this_mod->hwndParent,WM_USER,0,0) < 0x2900)
+  {
+    MessageBox(NULL,"This version of AVS requires Winamp 2.9+","AVS ERROR",MB_OK|MB_ICONSTOP);
+  }
+#endif
+
+#ifndef NO_MMX
+  extern int is_mmx(void);
+  if (!is_mmx())
+  {
+    MessageBox(NULL,"NO MMX SUPPORT FOUND - CANNOT RUN AVS - GET THE NON-MMX VERSION.","AVS ERROR",MB_OK|MB_ICONSTOP);
+  }
+#endif
+
 #ifdef LASER
   laser_connect();
   g_laser_linelist=createLineList();

@@ -31,8 +31,8 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <commctrl.h>
 #include <math.h>
 #include <stdio.h>
-#include "draw.h"
-#include "wnd.h"
+//#include "draw.h"
+//#include "wnd.h"
 #include "r_defs.h"
 #include "render.h"
 #include "vis.h"
