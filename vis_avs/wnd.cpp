@@ -31,7 +31,6 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <windows.h>
 #include <windowsx.h>
 #include "vis.h"
-#include "draw.h"
 #include "wnd.h"
 #include "cfgwnd.h"
 #include "r_defs.h"
@@ -115,10 +114,6 @@ void GetClientRect_adj(HWND hwnd, RECT *r)
   GetClientRect(hwnd,r);
 }
 
-HWND g_hwnd;
-
-HWND hwnd_WinampParent;
-extern HWND g_hwndDlg;
 extern char last_preset[2048];
 char *scanstr_back(char *str, char *toscan, char *defval)
 {
@@ -166,23 +161,19 @@ char *extension(char *fn)
 }
 
 int g_config_smp_mt=2,g_config_smp=0;
-static const char *INI_FILE;
-static std::string INI_FILE_BUF;
 
 int cfg_fs_dblclk=1;
 
-int Wnd_Init(struct winampVisModule *this_mod)
+int Wnd_Init(const char* path)
 {
 	//g_mod = this_mod;
-	g_hwnd = this_mod->hwndParent;
-	DDraw_Init();
+	//g_hwnd = this_mod->hwndParent;
 
-	avs_resize(this_mod);
+	//avs_resize(this_mod);
 
-	const char* path = (const char*) this_mod->userData;
-	if (path) INI_FILE_BUF = path;
-	INI_FILE_BUF += "winamp.ini";
-	INI_FILE = INI_FILE_BUF.c_str();
+	std::string file = path;
+	file += "winamp.ini";
+	const char* INI_FILE = file.c_str();
 
 #define AVS_SECTION "AVS"
 #ifdef LASER
@@ -277,26 +268,6 @@ int Wnd_Init(struct winampVisModule *this_mod)
   }
 #endif
   */
-#ifdef WA3_COMPONENT
-  int styles=WS_VISIBLE|WS_CHILD|WS_CLIPCHILDREN|WS_CLIPSIBLINGS;
-  HWND par = this_mod->hwndParent;
-#else
-#ifndef WA2_EMBED
-  int styles=WS_VISIBLE;
-  HWND par = g_minimized?NULL:this_mod->hwndParent;
-#else
-  int styles=WS_VISIBLE|WS_CHILDWINDOW|WS_OVERLAPPED|WS_CLIPCHILDREN|WS_CLIPSIBLINGS;
-  HWND (*e)(embedWindowState *v);
-  *(void**)&e = (void *)SendMessage(this_mod->hwndParent,WM_WA_IPC,(LPARAM)0,IPC_GET_EMBEDIF);
-  HWND par=0;
-  if (e) par=e(&myWindowState);
-  
-  if (par)
-    SetWindowText(par,"AVS");
-
-  g_hWA2ParentWindow=par;
-#endif
-#endif
 
   return 0;
 }
@@ -308,8 +279,12 @@ static void WriteInt(const char *INI_FILE, char *name, int value)
 	WritePrivateProfileString(AVS_SECTION,name,str,INI_FILE);
 }
 
-void Wnd_Quit(void)	
+void Wnd_Quit(const char *path)	
 {
+	std::string file = path;
+	file += "winamp.ini";
+	const char* INI_FILE = file.c_str();
+
   g_in_destroy=1;
 #ifdef LASER
     extern int g_laser_zones,g_laser_nomessage;

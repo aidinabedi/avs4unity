@@ -281,7 +281,6 @@ static BOOL CALLBACK g_DlgProc(HWND hwndDlg, UINT uMsg, WPARAM wParam,LPARAM lPa
           "Try loading an example via the 'Load Example' button for examples."
 
           ;
-        compilerfunctionlist(hwndDlg,text);
       }
 
       if (LOWORD(wParam)==IDC_CHECK1)

@@ -67,16 +67,8 @@ unsigned int const mmx_blend4_revn[2]={0xff00ff,0xff00ff};//{0x1000100,0x1000100
 int const mmx_blendadj_mask[2] = { 0xff00ff,0xff00ff};
 int const mmx_blend4_zero=0;
 
-void Render_Init(HINSTANCE hDllInstance, const char* path)
+void Render_Init(const char* path)
 {
-
-#ifdef WA2_EMBED
-  if (SendMessage(this_mod->hwndParent,WM_USER,0,0) < 0x2900)
-  {
-    MessageBox(NULL,"This version of AVS requires Winamp 2.9+","AVS ERROR",MB_OK|MB_ICONSTOP);
-  }
-#endif
-
 #ifndef NO_MMX
   extern int is_mmx(void);
   if (!is_mmx())
@@ -120,7 +112,7 @@ void Render_Init(HINSTANCE hDllInstance, const char* path)
   }
 }
 
-void Render_Quit(HINSTANCE hDllInstance, const char* path)
+void Render_Quit(const char* path)
 {
   if (g_render_transition) delete g_render_transition;
   g_render_transition=NULL;

@@ -36,7 +36,6 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "resource.h"
 #include "render.h"
 #include "rlib.h"
-#include "draw.h"
 #include "wnd.h"
 #include "bpm.h"
 #include "avs_eelif.h"
@@ -52,7 +51,7 @@ static int treeview_hack;
 static HTREEITEM g_hroot;
 
 extern int g_config_smp_mt,g_config_smp;
-extern int cfg_cancelfs_on_deactivate;
+int cfg_cancelfs_on_deactivate=1;
 
 HWND g_debugwnd;
 
@@ -87,11 +86,6 @@ int cfg_render_prio=0;
 
 char config_pres_subdir[MAX_PATH];
 char last_preset[2048];
-
-static BOOL CALLBACK dlgProc(HWND hwndDlg, UINT uMsg, WPARAM wParam,LPARAM lParam);
-HWND g_hwndDlg;
-
-extern HWND g_hwnd;
 
 #ifdef WA2_EMBED
 #include "wa_ipc.h"

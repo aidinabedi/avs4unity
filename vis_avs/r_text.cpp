@@ -290,7 +290,6 @@ void C_THISCLASS::PUT_FLOAT(float f, unsigned char *data, int pos)
 int y = *(int *)&f;
 data[pos]=(y)&255; data[pos+1]=(y>>8)&255; data[pos+2]=(y>>16)&255; data[pos+3]=(y>>24)&255;
 }
-extern HWND hwnd_WinampParent;
 
 
 int  C_THISCLASS::save_config(unsigned char *data) // write configuration to data, return length. config data should not exceed 64k.
@@ -361,12 +360,6 @@ void C_THISCLASS::getWord(int n, char *buf, int maxlen)
 
       int pos=0;
 
-      extern HWND hwnd_WinampParent;
-	    if (IsWindow(hwnd_WinampParent)) 
-      {
-        if (!SendMessageTimeout( hwnd_WinampParent, WM_USER,(WPARAM)!!islen,(LPARAM)105,SMTO_BLOCK,50,(LPDWORD)&pos)) 
-          pos=0;
-      }
       if (islen) pos*=1000;
       wsprintf(buf,"%d:%02d",pos/60000,(pos/1000)%60);
       if (add_dig>0)
@@ -392,7 +385,7 @@ void C_THISCLASS::getWord(int n, char *buf, int maxlen)
     }
     else if (!strnicmp(p,"$(title",7) && (endp = strstr(p+7,")")))
     {
-      static char this_title[256];
+	  static char this_title[256] = { 0 };
       static unsigned int ltg;
 
       unsigned int now=GetTickCount();
@@ -402,14 +395,6 @@ void C_THISCLASS::getWord(int n, char *buf, int maxlen)
         ltg=now;
 
         char *tpp;
-	      if (IsWindow(hwnd_WinampParent)) 
-        {
-          DWORD id;
-          if (!SendMessageTimeout( hwnd_WinampParent,WM_GETTEXT,(WPARAM)sizeof(this_title),(LPARAM)this_title,SMTO_BLOCK,50,&id) || !id) 
-          {
-            this_title[0]=0;
-          }
-        }
 	      tpp = this_title+strlen(this_title);
 	      while (tpp >= this_title)
 	      {

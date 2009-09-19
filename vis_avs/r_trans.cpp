@@ -953,7 +953,6 @@ static BOOL CALLBACK g_DlgProc(HWND hwndDlg, UINT uMsg, WPARAM wParam,LPARAM lPa
 "Rect coords: x,y are in (-1..1) . Otherwise: d is (0..1) and r is (0..2PI).\r\n"
 "You can also access 'sw' and 'sh' for screen dimensions in pixels (might be useful)\r\n"
           ;
-        compilerfunctionlist(hwndDlg,text);
       }
       return 0;
     return 0;

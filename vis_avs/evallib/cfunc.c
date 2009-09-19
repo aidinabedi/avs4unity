@@ -130,12 +130,6 @@ static double SHITCALL gettime_(double *sc)
   if ((ispos=(*sc > -1.001 && *sc < -0.999)) || (*sc > -2.001 && *sc < -1.999))
   {
     int pos=0;
-
-    extern HWND hwnd_WinampParent;
-	  if (IsWindow(hwnd_WinampParent)) 
-    {
-      if (!SendMessageTimeout( hwnd_WinampParent, WM_USER,(WPARAM)!ispos,(LPARAM)105,SMTO_BLOCK,50,(LPDWORD)&pos)) pos=0;
-    }
     if (!ispos) return (double)pos;
     return pos / 1000.0;
   }
@@ -158,10 +152,9 @@ static double SHITCALL getmouse_(double *which)
 
   if (w == 1 || w == 2)
   {
-    double DDraw_translatePoint(POINT p, int isY);
     POINT p;
     GetCursorPos(&p);
-    return DDraw_translatePoint(p,w==2);
+    return +;
   }
   if (w == 3) return (GetAsyncKeyState(MK_LBUTTON)&0x8000)?1.0:0.0;
   if (w == 4) return (GetAsyncKeyState(MK_RBUTTON)&0x8000)?1.0:0.0;

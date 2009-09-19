@@ -377,13 +377,6 @@ static BOOL CALLBACK evalHelpDlgProc(HWND hwndDlg, UINT uMsg, WPARAM wParam,LPAR
   return 0;
 }
 
-void compilerfunctionlist(HWND hwndDlg, char *localinfo)
-{
-  extern HINSTANCE g_hInstance;
-  DialogBoxParam(g_hInstance,MAKEINTRESOURCE(IDD_EVAL_HELP),hwndDlg,evalHelpDlgProc, (LONG)localinfo);
-}
-
-
 
 #if 0//syntax highlighting
 // If you include richedit boxes, you need to load the richlib at the beginning:
