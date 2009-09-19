@@ -35,29 +35,23 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "r_defs.h"
 #include "vis.h"
 
-#ifdef WA3_COMPONENT
-extern CRITICAL_SECTION g_title_cs;
-extern char g_title[2048];
-#endif
-
 extern HINSTANCE g_hInstance;
 
 #define RESIZE_ONRESIZE
 int draw_title_p=0;
-int cfg_cancelfs_on_deactivate=1;
-extern int g_dlg_fps,g_dlg_w,g_dlg_h;
-extern int cfg_fs_fps,cfg_fs_flip,cfg_fs_height,cfg_fs_use_overlay;
-extern int cfg_bkgnd_render, cfg_bkgnd_render_color;
+int g_dlg_fps,g_dlg_w,g_dlg_h;
+int cfg_fs_fps,cfg_fs_flip,cfg_fs_height,cfg_fs_use_overlay;
+int cfg_bkgnd_render, cfg_bkgnd_render_color;
 static LPDIRECTDRAW		   g_lpDD;
 static LPDIRECTDRAWSURFACE g_lpRenderSurf[2], g_lpPrimSurf, g_lpPrimSurfBack;
 static int g_bpp, g_fs, g_noshoww;
 int g_w, g_h, g_dsw, g_dsh;
-extern HWND g_hwnd;
+HWND g_hwnd;
 static CRITICAL_SECTION g_cs;
 static int g_windowed_dsize;
 static int g_initted, g_fs_flip, g_fs_height, g_fs_w, g_fs_h;
 static int nodraw=0;
-extern int inWharf;
+int inWharf;
 #ifdef RESIZE_ONRESIZE
 static int last_used;
 #endif
@@ -105,7 +99,7 @@ void DD_CreateSurfaces(int w, int h, int fsh, int fs, int fsbpp, int flip, int d
   nodraw=0;
   if (g_lpDD)
   {
-    extern int config_reuseonresize;
+    int config_reuseonresize = 0;
 #ifdef RESIZE_ONRESIZE
     HRESULT han;
     int ll=!!last_used;
@@ -669,9 +663,10 @@ bool CopyRGBSurfaceToYUVSurface(
 }
 #endif
 
-int DDraw_Init()
+int DDraw_Init(HWND hwnd)
 {
 	//InitializeCriticalSection(&g_cs);
+	g_hwnd = hwnd;
 	return 0;
 
 }
@@ -752,55 +747,6 @@ void DDraw_Enter(int *w, int *h, int **fb1, int **fb2)
     *h-=y*2;
     *fb1 += y*g_w;
     *fb2 += y*g_w;
-  }
-}
-      
-static unsigned int draw_title_time;
-static char last_title[1024];
-
-extern HWND hwnd_WinampParent;
-
-static void do_gettitle()
-{
-  if (draw_title_p < 1 && --draw_title_p < -7)
-  {
-    char this_title[2048]={0,};
-#ifdef WA3_COMPONENT
-    //EnterCriticalSection(&g_title_cs);
-    strcpy(this_title,g_title);
-    //LeaveCriticalSection(&g_title_cs);
-#else
-    char *p;
-	  if (IsWindow(hwnd_WinampParent)) 
-    {
-      DWORD id;
-      if (!SendMessageTimeout( hwnd_WinampParent,WM_GETTEXT,(WPARAM)sizeof(this_title),(LPARAM)this_title,SMTO_BLOCK,50,&id) || !id) return;
-    }
-	  p = this_title+strlen(this_title);
-	  while (p >= this_title)
-	  {
-		  char buf[9];
-		  memcpy(buf,p,8);
-		  buf[8]=0;
-		  if (!lstrcmpi(buf,"- Winamp")) break;
-		  p--;
-	  }
-	  if (p >= this_title) p--;
-	  while (p >= this_title && *p == ' ') p--;
-	  *++p=0;
-#endif
-	  if (lstrcmpi(this_title,last_title))
-	  {
-		  strcpy(last_title,this_title);
-      draw_title_p=1;
-      draw_title_time=GetTickCount()+1000;
-	  }
-    else draw_title_p=0;
-  }
-  if (draw_title_p == 2)
-  {
-    draw_title_p=1;
-    draw_title_time=GetTickCount()+1000;
   }
 }
 
@@ -1091,7 +1037,7 @@ slow_fs_non32bpp:
         goto endfunc;
 		  }
     }
-    do_gettitle();
+    //do_gettitle();
     if ((cfg_fs_fps&1) || (draw_title_p>0&&!(cfg_fs_fps&16)) || (statustext_life&&!(cfg_fs_fps&8)))
     {
 		  HDC out;
@@ -1132,28 +1078,13 @@ slow_fs_non32bpp:
         { 
           RECT r={4,4,g_fs_w,g_fs_h};
 			    SetTextColor(out,RGB(0,0,0));
-          DrawText(out,last_title,-1,&r,DT_VCENTER|DT_CENTER|DT_SINGLELINE|DT_NOPREFIX);
+          //DrawText(out,last_title,-1,&r,DT_VCENTER|DT_CENTER|DT_SINGLELINE|DT_NOPREFIX);
 			    r.left=r.top=0;
 			    SetTextColor(out,RGB(255,255,255));
-          DrawText(out,last_title,-1,&r,DT_VCENTER|DT_CENTER|DT_SINGLELINE|DT_NOPREFIX);
+          //DrawText(out,last_title,-1,&r,DT_VCENTER|DT_CENTER|DT_SINGLELINE|DT_NOPREFIX);
         }
         g_lpPrimSurfBack->ReleaseDC(out);
       }
-      if (draw_title_p>0 && draw_title_time < GetTickCount() && !(cfg_fs_fps&16))
-      {
-        if (g_lpRenderSurf[which]->GetDC(&out) == DD_OK)
-        {
-          RECT r={4,4,g_w,g_h};
-			    SetBkMode(out,TRANSPARENT);
-			    SetTextColor(out,RGB(0,0,0));
-          DrawText(out,last_title,-1,&r,DT_VCENTER|DT_CENTER|DT_SINGLELINE|DT_NOPREFIX);
-			    r.left=r.top=0;
-			    SetTextColor(out,RGB(255,255,255));
-          DrawText(out,last_title,-1,&r,DT_VCENTER|DT_CENTER|DT_SINGLELINE|DT_NOPREFIX);
-          g_lpRenderSurf[which]->ReleaseDC(out);
-        }
-        draw_title_p=0;
-      }    
     }
 		if (g_fs_flip&1) g_lpPrimSurf->Flip(NULL, DDFLIP_WAIT);
     else if (!(g_fs_flip&2)) g_lpDD->WaitForVerticalBlank(DDWAITVB_BLOCKBEGIN,0);
@@ -1189,49 +1120,6 @@ slow_fs_non32bpp:
 	  {
       goto endfunc;
 	  }
-    do_gettitle();
-    if (draw_title_p>0&&!(cfg_fs_fps&4) && draw_title_time < GetTickCount())
-    {
-      RECT r={4,4,g_w,g_h};
-			SetBkMode(in1,TRANSPARENT);
-			SetTextColor(in1,RGB(0,0,0));
-      DrawText(in1,last_title,-1,&r,DT_VCENTER|DT_CENTER|DT_SINGLELINE|DT_NOPREFIX);
-			r.left=r.top=0;
-			SetTextColor(in1,RGB(255,255,255));
-      DrawText(in1,last_title,-1,&r,DT_VCENTER|DT_CENTER|DT_SINGLELINE|DT_NOPREFIX);
-      draw_title_p=0;
-    }
-    if ((draw_title_p > 0&&!(cfg_fs_fps&4)) || (statustext_life&&!(cfg_fs_fps&2)))
-    {
-      // draw perframe
-      RECT r={4,4,g_w,g_h};
-		  if (g_lpRenderSurf[which^1]->GetDC(&in2) != DD_OK)
-		  {
-        in2=NULL; 
-        goto abort_thingy;
-		  }
-      BitBlt(in2,0,0,g_w,g_h,in1,0,0,SRCCOPY);
-      SetBkMode(in2,TRANSPARENT);
-      if (draw_title_p > 0&&!(cfg_fs_fps&4))
-      {
-			  SetTextColor(in2,RGB(0,0,0));
-        DrawText(in2,last_title,-1,&r,DT_VCENTER|DT_CENTER|DT_SINGLELINE|DT_NOPREFIX);
-			  r.left=r.top=0;
-			  SetTextColor(in2,RGB(255,255,255));
-        DrawText(in2,last_title,-1,&r,DT_VCENTER|DT_CENTER|DT_SINGLELINE|DT_NOPREFIX);
-      }
-      if (statustext_life&&!(cfg_fs_fps&2))
-      {
-        if (statustext_life==1) statustext_life=GetTickCount()+statustext_len;
-        if (GetTickCount() > statustext_life) statustext_life=0;
-			  SetTextColor(in2,RGB(0,0,0));
-        DrawText(in2,statustext,-1,&r,DT_BOTTOM|DT_RIGHT|DT_SINGLELINE|DT_NOPREFIX);
-        r.right-=2;
-        r.bottom-=2;
-			  SetTextColor(in2,RGB(255,255,255));
-        DrawText(in2,statustext,-1,&r,DT_BOTTOM|DT_RIGHT|DT_SINGLELINE|DT_NOPREFIX);
-      }
-    }
 abort_thingy:
     if (!(cfg_fs_flip&4)) g_lpDD->WaitForVerticalBlank(DDWAITVB_BLOCKBEGIN,0);
 		out=GetDC(g_hwnd);

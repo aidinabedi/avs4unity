@@ -30,10 +30,9 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define DLLEXPORT __declspec( dllexport )
 
 extern "C" {
-	DLLEXPORT int avs_init(struct winampVisModule *this_mod);
-	DLLEXPORT int avs_resize(struct winampVisModule *this_mod);
-	DLLEXPORT int avs_render(struct winampVisModule *this_mod);
-	DLLEXPORT void avs_quit(struct winampVisModule *this_mod);
+	DLLEXPORT int avs_init(const char* path);
+	DLLEXPORT int avs_render(int* fb, int* fb2, int width, int height, float time);
+	DLLEXPORT void avs_quit();
 
 	DLLEXPORT void avs_next_preset();
 	DLLEXPORT void avs_previous_preset();

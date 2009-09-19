@@ -27,12 +27,8 @@ IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISI
 OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 */
-int Wnd_Init(struct winampVisModule *this_mod);
-void Wnd_Quit(void);
-void SetTransparency(HWND hWnd, int enable, int amount);
-HWND GetWinampHwnd(void);
+int Wnd_Init(const char* path);
+void Wnd_Quit(const char* path);
 
-extern HWND g_hwnd;
-extern HINSTANCE g_hInstance;
 extern int g_in_destroy;
 extern int g_rnd_cnt;

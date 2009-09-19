@@ -350,7 +350,6 @@ static BOOL CALLBACK g_DlgProc(HWND hwndDlg, UINT uMsg, WPARAM wParam,LPARAM lPa
            "b = isBeat\r\n"
            "alpha = alpha value (0.0-1.0) for blend\r\n"
          ;
-        compilerfunctionlist(hwndDlg,text);
       }
       if (LOWORD(wParam)==IDC_CHECK1)
       {

@@ -106,11 +106,6 @@ static double NSEEL_CGEN_CALL gettime_(double *sc)
   {
     int pos=0;
 
-    extern HWND hwnd_WinampParent;
-	  if (IsWindow(hwnd_WinampParent)) 
-    {
-      if (!SendMessageTimeout( hwnd_WinampParent, WM_USER,(WPARAM)!ispos,(LPARAM)105,SMTO_BLOCK,50,(LPDWORD)&pos)) pos=0;
-    }
     if (!ispos) return (double)pos;
     return pos / 1000.0;
   }
@@ -124,9 +119,6 @@ static double NSEEL_CGEN_CALL setmousepos_(double *x, double *y)
   return 0.0;
 }
 
-
-extern double DDraw_translatePoint(POINT p, int isY);
-
 static double NSEEL_CGEN_CALL getmouse_(double *which)
 {
   int w=(int)(*which+0.5);
@@ -138,7 +130,7 @@ static double NSEEL_CGEN_CALL getmouse_(double *which)
   {
     POINT p;
     GetCursorPos(&p);
-    return DDraw_translatePoint(p,w==2);
+    return 0;
   }
   if (w == 3) return (GetAsyncKeyState(MK_LBUTTON)&0x8000)?1.0:0.0;
   if (w == 4) return (GetAsyncKeyState(MK_RBUTTON)&0x8000)?1.0:0.0;

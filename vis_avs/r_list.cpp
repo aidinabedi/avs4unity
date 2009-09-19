@@ -1189,8 +1189,6 @@ BOOL CALLBACK C_RenderListClass::g_DlgProc(HWND hwndDlg, UINT uMsg, WPARAM wPara
                      "If the output blend is set to adjustable, 'alphaout' can be set from 0.0-1.0\r\n"
                      "'w' and 'h' are set with the current width and height of the frame\r\n"
             ;
-
-          compilerfunctionlist(hwndDlg,text);
         }
         break;
       }

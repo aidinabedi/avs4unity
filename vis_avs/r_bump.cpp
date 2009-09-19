@@ -487,7 +487,6 @@ switch (uMsg)
 										  "      Init : t=0;u=0\r\n"
 										  "      Frame: x=0.5+cos(t)*0.3; y=0.5+cos(u)*0.3; t=t+0.1; u=u+0.012;\r\n"
                       ;
-        compilerfunctionlist(hwndDlg,text);
 			return 0;
     }
 	  if ((LOWORD(wParam) == IDC_CHECK1) ||

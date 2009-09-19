@@ -7,7 +7,19 @@
 #include "vis_avs.h"
 #pragma comment(lib, "vis_avs.lib")
 
+#include "draw.h"
+#pragma comment(lib, "ddraw.lib")
+
 const char g_szClassName[] = "myWindowClass";
+
+int resize(HWND hwnd)
+{
+	RECT r;
+	GetClientRect(hwnd,&r);
+	DDraw_Resize(r.right-r.left,r.bottom-r.top, 0);
+	return 0;
+}
+
 
 // Step 4: the Window Procedure
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -18,7 +30,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             //
         break;
         case WM_SIZE:
-            avs_resize(NULL);
+            resize(hwnd);
         break;
         case WM_CLOSE:
             DestroyWindow(hwnd);
@@ -115,13 +127,15 @@ int WINAPI WinMain(
 		NULL, // userData
 	};
 
-	printf("avs_init(...)\n");
-	int x, y;
+	//printf("init...\n");
+	DDraw_Init(hwnd);
+	resize(hwnd);
+	avs_init("");
 
-	avs_init(&mod);
-
-	printf("loop ...\n");
+	//printf("loop ...\n");
     // Step 3: The Message Loop
+	int w, h;
+	int *fb, *fb2;
 	MSG msg;
 	bool exitLoop = false;
 
@@ -135,19 +149,13 @@ int WINAPI WinMain(
 		}
 
 		Sleep(mod.delayMs);
-
-		for (x = 0; x < 2; x++)
-		{
-			mod.waveformData[x][0] = 0;
-
-			for (y = 1; y < 576; y++)
-			{
-				mod.waveformData[x][y] = mod.waveformData[x][y-1] + (rand()%200 - 100) *.2;
-			}
-		}
-		avs_render(&mod);
+		
+		DDraw_Enter(&w,&h,&fb,&fb2);
+		int s = avs_render(fb, fb2, w, h, 0);
+		DDraw_Exit(s);
 	}
 
-	avs_quit(&mod);
+	avs_quit();
+	DDraw_Quit();
 	return 0;
 }

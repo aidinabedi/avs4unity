@@ -511,8 +511,6 @@ BOOL CALLBACK C_THISCLASS::g_DlgProc(HWND hwndDlg, UINT uMsg, WPARAM wParam,LPAR
                    "  'w' and 'h' are the width and height of the screen, in pixels.\r\n"
                    " Anybody want to send me better text to put here? Please :)\r\n"
           ;
-
-        compilerfunctionlist(hwndDlg,text);
       }
       if (LOWORD(wParam) == IDC_BUTTON1)
       {

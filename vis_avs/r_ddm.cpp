@@ -448,7 +448,6 @@ static BOOL CALLBACK g_DlgProc(HWND hwndDlg, UINT uMsg, WPARAM wParam,LPARAM lPa
           "Zoom out: 'd=d*1.1'\r\n"
           "Back and forth: pixel='d=d*(1.0+0.1*cos(t));', frame='t=t+0.1'\r\n"
           ;
-        compilerfunctionlist(hwndDlg,text);
       }
 
       if (LOWORD(wParam)==IDC_CHECK1)

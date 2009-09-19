@@ -32,8 +32,8 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "r_transition.h"
 #include "rlib.h"
 
-void Render_Init(HINSTANCE hDllInstance, const char* path);
-void Render_Quit(HINSTANCE hDllInstance, const char* path);
+void Render_Init(const char* path);
+void Render_Quit(const char* path);
 
 extern C_RenderListClass *g_render_effects;
 extern C_RenderListClass *g_render_effects2;

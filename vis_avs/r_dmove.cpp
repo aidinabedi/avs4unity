@@ -661,7 +661,6 @@ static BOOL CALLBACK g_DlgProc(HWND hwndDlg, UINT uMsg, WPARAM wParam,LPARAM lPa
       {
         char *text="Dynamic Movement\0"
           "Dynamic movement help goes here (send me some :)";
-        compilerfunctionlist(hwndDlg,text);
       }
 
       if (LOWORD(wParam)==IDC_CHECK1)
