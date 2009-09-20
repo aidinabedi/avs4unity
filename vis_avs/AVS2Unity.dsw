@@ -12,13 +12,13 @@ Package=<5>
 Package=<4>
 {{{
     Begin Project Dependency
-    Project_Dep_Name vis_avs
+    Project_Dep_Name AVS2Unity
     End Project Dependency
 }}}
 
 ###############################################################################
 
-Project: "vis_avs"=.\vis_avs.dsp - Package Owner=<4>
+Project: "AVS2Unity"=.\AVS2Unity.dsp - Package Owner=<4>
 
 Package=<5>
 {{{

@@ -37,7 +37,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "cfgwnd.h"
 #include "resource.h"
 #include "bpm.h"
-#include "vis_avs.h"
+#include "AVS2Unity.h"
 
 #include <string>
 #include <vector>
@@ -261,9 +261,12 @@ int avs_render(void* colors, int width, int height, float time)
 	float *dst = (float *) colors;
 
 	int i, size = pixels*4;
-    for (i = 0; i < size; i++)
+    for (i = 0; i < size; i += 4)
 	{
-		dst[i] = ((float) src[i])/255;
+		dst[i] = ((float) src[i])*0.0039215686274509803f;
+		dst[i+1] = ((float) src[i+1])*0.0039215686274509803f;
+		dst[i+2] = ((float) src[i+2])*0.0039215686274509803f;
+		dst[i+3] = 1;
 	}
 
 #ifdef LASER
