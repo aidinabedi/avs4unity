@@ -1,37 +1,37 @@
-# Microsoft Developer Studio Project File - Name="vis_avs" - Package Owner=<4>
+# Microsoft Developer Studio Project File - Name="AVS2Unity" - Package Owner=<4>
 # Microsoft Developer Studio Generated Build File, Format Version 6.00
 # ** DO NOT EDIT **
 
 # TARGTYPE "Win32 (x86) Dynamic-Link Library" 0x0102
 
-CFG=vis_avs - Win32 Debug
+CFG=AVS2Unity - Win32 Debug
 !MESSAGE This is not a valid makefile. To build this project using NMAKE,
 !MESSAGE use the Export Makefile command and run
 !MESSAGE 
-!MESSAGE NMAKE /f "vis_avs.mak".
+!MESSAGE NMAKE /f "AVS2Unity.mak".
 !MESSAGE 
 !MESSAGE You can specify a configuration when running NMAKE
 !MESSAGE by defining the macro CFG on the command line. For example:
 !MESSAGE 
-!MESSAGE NMAKE /f "vis_avs.mak" CFG="vis_avs - Win32 Debug"
+!MESSAGE NMAKE /f "AVS2Unity.mak" CFG="AVS2Unity - Win32 Debug"
 !MESSAGE 
 !MESSAGE Possible choices for configuration are:
 !MESSAGE 
-!MESSAGE "vis_avs - Win32 Release" (based on "Win32 (x86) Dynamic-Link Library")
-!MESSAGE "vis_avs - Win32 Debug" (based on "Win32 (x86) Dynamic-Link Library")
-!MESSAGE "vis_avs - Win32 Laser Release" (based on "Win32 (x86) Dynamic-Link Library")
-!MESSAGE "vis_avs - Win32 NoMMX Release" (based on "Win32 (x86) Dynamic-Link Library")
+!MESSAGE "AVS2Unity - Win32 Release" (based on "Win32 (x86) Dynamic-Link Library")
+!MESSAGE "AVS2Unity - Win32 Debug" (based on "Win32 (x86) Dynamic-Link Library")
+!MESSAGE "AVS2Unity - Win32 Laser Release" (based on "Win32 (x86) Dynamic-Link Library")
+!MESSAGE "AVS2Unity - Win32 NoMMX Release" (based on "Win32 (x86) Dynamic-Link Library")
 !MESSAGE 
 
 # Begin Project
 # PROP AllowPerConfigDependencies 0
-# PROP Scc_ProjName ""$/vis_avs", RDAAAAAA"
+# PROP Scc_ProjName ""$/AVS2Unity", RDAAAAAA"
 # PROP Scc_LocalPath "."
 CPP=cl.exe
 MTL=midl.exe
 RSC=rc.exe
 
-!IF  "$(CFG)" == "vis_avs - Win32 Release"
+!IF  "$(CFG)" == "AVS2Unity - Win32 Release"
 
 # PROP BASE Use_MFC 0
 # PROP BASE Use_Debug_Libraries 0
@@ -56,10 +56,10 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /machine:I386
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib ddraw.lib vfw32.lib /nologo /dll /map /machine:I386 /out:"vis_avs.dll"
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib vfw32.lib /nologo /dll /map /machine:I386 /out:"AVS2Unity.dll"
 # SUBTRACT LINK32 /debug
 
-!ELSEIF  "$(CFG)" == "vis_avs - Win32 Debug"
+!ELSEIF  "$(CFG)" == "AVS2Unity - Win32 Debug"
 
 # PROP BASE Use_MFC 0
 # PROP BASE Use_Debug_Libraries 1
@@ -83,20 +83,20 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib ddraw.lib vfw32.lib /nologo /dll /debug /machine:I386 /out:"vis_avs.dll" /pdbtype:sept
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib ddraw.lib vfw32.lib /nologo /dll /debug /machine:I386 /out:"AVS2Unity.dll" /pdbtype:sept
 
-!ELSEIF  "$(CFG)" == "vis_avs - Win32 Laser Release"
+!ELSEIF  "$(CFG)" == "AVS2Unity - Win32 Laser Release"
 
 # PROP BASE Use_MFC 0
 # PROP BASE Use_Debug_Libraries 0
-# PROP BASE Output_Dir "vis_avs___Win32_Laser_Release"
-# PROP BASE Intermediate_Dir "vis_avs___Win32_Laser_Release"
+# PROP BASE Output_Dir "AVS2Unity___Win32_Laser_Release"
+# PROP BASE Intermediate_Dir "AVS2Unity___Win32_Laser_Release"
 # PROP BASE Ignore_Export_Lib 0
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 0
-# PROP Output_Dir "vis_avs___Win32_Laser_Release"
-# PROP Intermediate_Dir "vis_avs___Win32_Laser_Release"
+# PROP Output_Dir "AVS2Unity___Win32_Laser_Release"
+# PROP Intermediate_Dir "AVS2Unity___Win32_Laser_Release"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /G6 /MT /W3 /GX /O2 /Ob2 /I "evallib/" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "VIS_PL_EXPORTS" /FD /c
@@ -111,23 +111,23 @@ BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
 LINK32=link.exe
-# ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib ddraw.lib vfw32.lib /nologo /dll /machine:I386 /out:"c:\program files\winamp\plugins\vis_avs.dll"
+# ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib ddraw.lib vfw32.lib /nologo /dll /machine:I386 /out:"c:\program files\winamp\plugins\AVS2Unity.dll"
 # SUBTRACT BASE LINK32 /debug
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib ddraw.lib vfw32.lib /nologo /dll /machine:I386 /out:"vis_avs.dll"
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib ddraw.lib vfw32.lib /nologo /dll /machine:I386 /out:"AVS2Unity.dll"
 # SUBTRACT LINK32 /debug
 
-!ELSEIF  "$(CFG)" == "vis_avs - Win32 NoMMX Release"
+!ELSEIF  "$(CFG)" == "AVS2Unity - Win32 NoMMX Release"
 
 # PROP BASE Use_MFC 0
 # PROP BASE Use_Debug_Libraries 0
-# PROP BASE Output_Dir "vis_avs___Win32_NoMMX_Release"
-# PROP BASE Intermediate_Dir "vis_avs___Win32_NoMMX_Release"
+# PROP BASE Output_Dir "AVS2Unity___Win32_NoMMX_Release"
+# PROP BASE Intermediate_Dir "AVS2Unity___Win32_NoMMX_Release"
 # PROP BASE Ignore_Export_Lib 0
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 0
-# PROP Output_Dir "vis_avs___Win32_NoMMX_Release"
-# PROP Intermediate_Dir "vis_avs___Win32_NoMMX_Release"
+# PROP Output_Dir "AVS2Unity___Win32_NoMMX_Release"
+# PROP Intermediate_Dir "AVS2Unity___Win32_NoMMX_Release"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /G6 /MT /W3 /GX /O2 /Ob2 /I "evallib/" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "VIS_PL_EXPORTS" /FD /c
@@ -142,19 +142,19 @@ BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
 LINK32=link.exe
-# ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib ddraw.lib vfw32.lib /nologo /dll /map /machine:I386 /out:"c:\progra~1\winamp\plugins\vis_avs.dll"
+# ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib ddraw.lib vfw32.lib /nologo /dll /map /machine:I386 /out:"c:\progra~1\winamp\plugins\AVS2Unity.dll"
 # SUBTRACT BASE LINK32 /debug
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib ddraw.lib vfw32.lib /nologo /dll /map /machine:I386 /out:"vis_avs.dll"
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib ddraw.lib vfw32.lib /nologo /dll /map /machine:I386 /out:"AVS2Unity.dll"
 # SUBTRACT LINK32 /debug
 
 !ENDIF 
 
 # Begin Target
 
-# Name "vis_avs - Win32 Release"
-# Name "vis_avs - Win32 Debug"
-# Name "vis_avs - Win32 Laser Release"
-# Name "vis_avs - Win32 NoMMX Release"
+# Name "AVS2Unity - Win32 Release"
+# Name "AVS2Unity - Win32 Debug"
+# Name "AVS2Unity - Win32 Laser Release"
+# Name "AVS2Unity - Win32 NoMMX Release"
 # Begin Group "Source Files"
 
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
@@ -373,15 +373,15 @@ SOURCE=.\r_waterbump.cpp
 
 SOURCE=.\avs_eelif.cpp
 
-!IF  "$(CFG)" == "vis_avs - Win32 Release"
+!IF  "$(CFG)" == "AVS2Unity - Win32 Release"
 
 # ADD CPP /O1
 
-!ELSEIF  "$(CFG)" == "vis_avs - Win32 Debug"
+!ELSEIF  "$(CFG)" == "AVS2Unity - Win32 Debug"
 
-!ELSEIF  "$(CFG)" == "vis_avs - Win32 Laser Release"
+!ELSEIF  "$(CFG)" == "AVS2Unity - Win32 Laser Release"
 
-!ELSEIF  "$(CFG)" == "vis_avs - Win32 NoMMX Release"
+!ELSEIF  "$(CFG)" == "AVS2Unity - Win32 NoMMX Release"
 
 !ENDIF 
 
@@ -394,15 +394,15 @@ SOURCE=.\avs_eelif.h
 
 SOURCE="..\ns-eel\megabuf.c"
 
-!IF  "$(CFG)" == "vis_avs - Win32 Release"
+!IF  "$(CFG)" == "AVS2Unity - Win32 Release"
 
 # ADD CPP /O1
 
-!ELSEIF  "$(CFG)" == "vis_avs - Win32 Debug"
+!ELSEIF  "$(CFG)" == "AVS2Unity - Win32 Debug"
 
-!ELSEIF  "$(CFG)" == "vis_avs - Win32 Laser Release"
+!ELSEIF  "$(CFG)" == "AVS2Unity - Win32 Laser Release"
 
-!ELSEIF  "$(CFG)" == "vis_avs - Win32 NoMMX Release"
+!ELSEIF  "$(CFG)" == "AVS2Unity - Win32 NoMMX Release"
 
 !ENDIF 
 
@@ -427,15 +427,15 @@ SOURCE="..\ns-eel\nseel-caltab.c"
 
 SOURCE="..\ns-eel\nseel-cfunc.c"
 
-!IF  "$(CFG)" == "vis_avs - Win32 Release"
+!IF  "$(CFG)" == "AVS2Unity - Win32 Release"
 
 # ADD CPP /O1
 
-!ELSEIF  "$(CFG)" == "vis_avs - Win32 Debug"
+!ELSEIF  "$(CFG)" == "AVS2Unity - Win32 Debug"
 
-!ELSEIF  "$(CFG)" == "vis_avs - Win32 Laser Release"
+!ELSEIF  "$(CFG)" == "AVS2Unity - Win32 Laser Release"
 
-!ELSEIF  "$(CFG)" == "vis_avs - Win32 NoMMX Release"
+!ELSEIF  "$(CFG)" == "AVS2Unity - Win32 NoMMX Release"
 
 !ENDIF 
 
@@ -571,10 +571,6 @@ SOURCE=.\debug.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\draw.cpp
-# End Source File
-# Begin Source File
-
 SOURCE=.\render.cpp
 # End Source File
 # Begin Source File
@@ -603,7 +599,7 @@ SOURCE=.\undo.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\vis_avs.cpp
+SOURCE=.\AVS2Unity.cpp
 # End Source File
 # Begin Source File
 
@@ -631,10 +627,6 @@ SOURCE=.\debug.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\draw.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\render.h
 # End Source File
 # Begin Source File
@@ -647,7 +639,7 @@ SOURCE=.\undo.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\vis_avs.h
+SOURCE=.\AVS2Unity.h
 # End Source File
 # Begin Source File
 

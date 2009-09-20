@@ -39,7 +39,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "undo.h"
 #include <multimon.h>
 #include <string>
-#include "vis_avs.h"
+#include "AVS2Unity.h"
 
 #include "avs_eelif.h"
 #include "debug.h"

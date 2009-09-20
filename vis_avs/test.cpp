@@ -5,8 +5,8 @@
 #include <vector>
 
 #include "vis.h"
-#include "vis_avs.h"
-#pragma comment(lib, "vis_avs.lib")
+#include "AVS2Unity.h"
+#pragma comment(lib, "AVS2Unity.lib")
 
 #include "draw.h"
 #pragma comment(lib, "ddraw.lib")
