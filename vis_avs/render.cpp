@@ -125,7 +125,7 @@ void Render_Quit(const char* path)
 		file += "vis_avs.dat";
 #endif
 
-    g_render_effects->__SavePreset(file.c_str());
+    //g_render_effects->__SavePreset(file.c_str());
 	}
 
   if (g_render_effects) delete g_render_effects;

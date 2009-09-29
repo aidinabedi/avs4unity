@@ -281,78 +281,7 @@ static void WriteInt(const char *INI_FILE, char *name, int value)
 
 void Wnd_Quit(const char *path)	
 {
-	std::string file = path;
-	file += "winamp.ini";
-	const char* INI_FILE = file.c_str();
-
   g_in_destroy=1;
-#ifdef LASER
-    extern int g_laser_zones,g_laser_nomessage;
-    //wsprintf(str,"%d",g_laser_zones);
-		WriteInt(INI_FILE, "laser_zones",g_laser_zones);
-		WriteInt(INI_FILE, "laser_nomessage",g_laser_nomessage);
-#else
-    WriteInt(INI_FILE, "smp",g_config_smp);
-    WriteInt(INI_FILE, "smp_mt",g_config_smp_mt);
-#endif
-#ifdef WA2_EMBED
-		WriteInt(INI_FILE, "wx",myWindowState.r.left);
-    WriteInt(INI_FILE, "wy",myWindowState.r.top);
-		WriteInt(INI_FILE, "ww",myWindowState.r.right-myWindowState.r.left);
-		WriteInt(INI_FILE, "wh",myWindowState.r.bottom-myWindowState.r.top);
-#else
-		WriteInt(INI_FILE, "cfg_x",cfg_x);
-		WriteInt(INI_FILE, "cfg_y",cfg_y);
-		WriteInt(INI_FILE, "cfg_w",cfg_w);
-		WriteInt(INI_FILE, "cfg_h",cfg_h);
-#endif
-		WritePrivateProfileString(AVS_SECTION,"config_pres_subdir",config_pres_subdir,INI_FILE);
-
-		//WriteInt(INI_FILE, "cfg_docked",inWharf?1:0);
-		WriteInt(INI_FILE, "cfg_cfgwnd_open",cfg_cfgwnd_open);
-		WriteInt(INI_FILE, "cfg_cfgwnd_x",cfg_cfgwnd_x);
-		WriteInt(INI_FILE, "cfg_cfgwnd_y",cfg_cfgwnd_y);
-		WriteInt(INI_FILE, "cfg_fs_w",cfg_fs_w);
-		WriteInt(INI_FILE, "cfg_fs_h",cfg_fs_h);
-		WriteInt(INI_FILE, "cfg_fs_d",cfg_fs_d);
-		WriteInt(INI_FILE, "cfg_fs_bpp",cfg_fs_bpp);
-		WriteInt(INI_FILE, "cfg_fs_fps",cfg_fs_fps);
-		WriteInt(INI_FILE, "cfg_fs_rnd",cfg_fs_rnd);
-		WriteInt(INI_FILE, "cfg_fs_rnd_time",cfg_fs_rnd_time);    
-    WriteInt(INI_FILE, "cfg_fs_dblclk",cfg_fs_dblclk);
-		WriteInt(INI_FILE, "cfg_fs_flip",cfg_fs_flip);
-		WriteInt(INI_FILE, "cfg_fs_height",cfg_fs_height);
-		WriteInt(INI_FILE, "cfg_fs_use_overlay",cfg_fs_use_overlay);
-		WriteInt(INI_FILE, "cfg_fs_cancelondeactivate",cfg_cancelfs_on_deactivate);
-		WriteInt(INI_FILE, "cfg_speed",cfg_speed);
-		WriteInt(INI_FILE, "cfg_trans",cfg_trans);
-		WriteInt(INI_FILE, "cfg_dont_min_avs",cfg_dont_min_avs);
-		WriteInt(INI_FILE, "cfg_smartbeat",cfg_smartbeat);
-		WriteInt(INI_FILE, "cfg_smartbeatsticky",cfg_smartbeatsticky);
-		WriteInt(INI_FILE, "cfg_smartbeatresetnewsong",cfg_smartbeatresetnewsong);
-		WriteInt(INI_FILE, "cfg_smartbeatonlysticky",cfg_smartbeatonlysticky);
-		WriteInt(INI_FILE, "cfg_transitions_en",cfg_transitions);
-		WriteInt(INI_FILE, "cfg_transitions_preinit",cfg_transitions2);
-		WriteInt(INI_FILE, "cfg_transitions_speed",cfg_transitions_speed);
-		WriteInt(INI_FILE, "cfg_transitions_mode",cfg_transition_mode);
-		WriteInt(INI_FILE, "cfg_bkgnd_render",cfg_bkgnd_render);
-		WriteInt(INI_FILE, "cfg_bkgnd_render_color",cfg_bkgnd_render_color);
-		WriteInt(INI_FILE, "cfg_render_prio",cfg_render_prio);
-    WriteInt(INI_FILE, "g_preset_dirty",C_UndoStack::isdirty());
-    WriteInt(INI_FILE, "cfg_prompt_save_preset",config_prompt_save_preset);
-		WritePrivateProfileString(AVS_SECTION,"last_preset_name",last_preset,INI_FILE);
-    WriteInt(INI_FILE, "cfg_reuseonresize",config_reuseonresize);
-    WriteInt(INI_FILE, "cfg_log_errors",g_log_errors);
-    WriteInt(INI_FILE, "cfg_reset_vars",g_reset_vars_on_recompile);
-    WriteInt(INI_FILE, "cfg_seh",g_config_seh);
-
-    int x;
-    for (x = 0; x < 8; x ++)
-    {
-      char debugreg[32];
-      wsprintf(debugreg,"debugreg_%d",x);
-      WriteInt(INI_FILE, debugreg,debug_reg[x]);
-    }
 }
 
 static int find_preset(char *parent_path, int dir, char *lastpreset, char *newpreset, int *state)
