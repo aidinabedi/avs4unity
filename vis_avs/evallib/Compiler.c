@@ -27,6 +27,9 @@ IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISI
 OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 */
+
+#include "../config.h"
+
 #include <windows.h>
 #include <stdio.h>
 #include <math.h>
@@ -710,7 +713,7 @@ int compileCode(char *_expression)
 }
 
 //------------------------------------------------------------------------------
-void executeCode(int handle, char visdata[2][2][576])
+void executeCode(int handle, char visdata[2][2][SAMPLES])
 {
 #ifdef NSEEL_REENTRANT_EXECUTION
   int baseptr;

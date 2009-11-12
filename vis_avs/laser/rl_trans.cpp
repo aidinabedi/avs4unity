@@ -27,6 +27,9 @@ IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISI
 OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 */
+
+#include "../config.h"
+
 #ifdef LASER
 #include <windows.h>
 #include <commctrl.h>
@@ -44,7 +47,7 @@ class C_THISCLASS : public C_RBASE {
 	public:
 		C_THISCLASS();
 		virtual ~C_THISCLASS();
-		virtual int render(char visdata[2][2][576], int isBeat, int *framebuffer, int *fbout, int w, int h); // returns 1 if fbout has dest
+		virtual int render(char visdata[2][2][SAMPLES], int isBeat, int *framebuffer, int *fbout, int w, int h); // returns 1 if fbout has dest
 		virtual char *get_desc() { return MOD_NAME; }
 		virtual HWND conf(HINSTANCE hInstance, HWND hwndParent);
 		virtual void load_config(unsigned char *data, int len);
@@ -53,7 +56,7 @@ class C_THISCLASS : public C_RBASE {
 		void load_string(RString &s,unsigned char *data, int &pos, int len);
 		void save_string(unsigned char *data, int &pos, RString &text);
 
-    void dopoint(float &x, float &y, char visdata[2][2][576], int &color);
+    void dopoint(float &x, float &y, char visdata[2][2][SAMPLES], int &color);
 
     varType vars[EVAL_MAX_VARS];
     int codehandle,codehandle_b,codehandle_i,codehandle_f;
@@ -190,7 +193,7 @@ C_THISCLASS::~C_THISCLASS()
   //DeleteCriticalSection(&rcs);
 }
 
-void C_THISCLASS::dopoint(float &x, float &y, char visdata[2][2][576], int &color)
+void C_THISCLASS::dopoint(float &x, float &y, char visdata[2][2][SAMPLES], int &color)
 {
   *v_d=sqrt(x*x+y*y);
   *v_r=atan2(y,x) + 3.14159*0.5;
@@ -231,7 +234,7 @@ void C_THISCLASS::dopoint(float &x, float &y, char visdata[2][2][576], int &colo
 }
 
 
-int C_THISCLASS::render(char visdata[2][2][576], int isBeat, int *framebuffer, int *fbout, int w, int h) // returns 1 if fbout has dest
+int C_THISCLASS::render(char visdata[2][2][SAMPLES], int isBeat, int *framebuffer, int *fbout, int w, int h) // returns 1 if fbout has dest
 {
   if (isBeat&0x80000000) return 0;
 

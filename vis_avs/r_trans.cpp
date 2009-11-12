@@ -24,9 +24,7 @@ CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,
 DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
 DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER
 IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT 
-OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-*/
+OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */ #include "config.h"
 // alphachannel safe 11/21/99
 #define M_PI 3.14159265358979323846
 
@@ -129,12 +127,12 @@ class C_THISCLASS : public C_RBASE2 {
 	public:
 		C_THISCLASS();
 		virtual ~C_THISCLASS();
-		virtual int render(char visdata[2][2][576], int isBeat, int *framebuffer, int *fbout, int w, int h);
+		virtual int render(char visdata[2][2][SAMPLES], int isBeat, int *framebuffer, int *fbout, int w, int h);
 
     virtual int smp_getflags() { return 1; }
-		virtual int smp_begin(int max_threads, char visdata[2][2][576], int isBeat, int *framebuffer, int *fbout, int w, int h); 
-    virtual void smp_render(int this_thread, int max_threads, char visdata[2][2][576], int isBeat, int *framebuffer, int *fbout, int w, int h); 
-    virtual int smp_finish(char visdata[2][2][576], int isBeat, int *framebuffer, int *fbout, int w, int h); // return value is that of render() for fbstuff etc
+		virtual int smp_begin(int max_threads, char visdata[2][2][SAMPLES], int isBeat, int *framebuffer, int *fbout, int w, int h); 
+    virtual void smp_render(int this_thread, int max_threads, char visdata[2][2][SAMPLES], int isBeat, int *framebuffer, int *fbout, int w, int h); 
+    virtual int smp_finish(char visdata[2][2][SAMPLES], int isBeat, int *framebuffer, int *fbout, int w, int h); // return value is that of render() for fbstuff etc
 
 		virtual char *get_desc() { return MOD_NAME; }
 		virtual HWND conf(HINSTANCE hInstance, HWND hwndParent);
@@ -289,7 +287,7 @@ C_THISCLASS::~C_THISCLASS()
   //DeleteCriticalSection(&rcs);
 }
 
-int C_THISCLASS::smp_begin(int max_threads, char visdata[2][2][576], int isBeat, int *framebuffer, int *fbout, int w, int h)
+int C_THISCLASS::smp_begin(int max_threads, char visdata[2][2][SAMPLES], int isBeat, int *framebuffer, int *fbout, int w, int h)
 {
   if (!effect) return 0;
 
@@ -550,7 +548,7 @@ int C_THISCLASS::smp_begin(int max_threads, char visdata[2][2][576], int isBeat,
   return max_threads;
 }
 
-void C_THISCLASS::smp_render(int this_thread, int max_threads, char visdata[2][2][576], int isBeat, int *framebuffer, int *fbout, int w, int h)
+void C_THISCLASS::smp_render(int this_thread, int max_threads, char visdata[2][2][SAMPLES], int isBeat, int *framebuffer, int *fbout, int w, int h)
 {
   if (!effect) return;
   
@@ -746,12 +744,12 @@ void C_THISCLASS::smp_render(int this_thread, int max_threads, char visdata[2][2
   }
 }
 
-int C_THISCLASS::smp_finish(char visdata[2][2][576], int isBeat, int *framebuffer, int *fbout, int w, int h) // return value is that of render() for fbstuff etc
+int C_THISCLASS::smp_finish(char visdata[2][2][SAMPLES], int isBeat, int *framebuffer, int *fbout, int w, int h) // return value is that of render() for fbstuff etc
 {
   return !!effect;
 }
 	
-int C_THISCLASS::render(char visdata[2][2][576], int isBeat, int *framebuffer, int *fbout, int w, int h)
+int C_THISCLASS::render(char visdata[2][2][SAMPLES], int isBeat, int *framebuffer, int *fbout, int w, int h)
 {
   smp_begin(1,visdata,isBeat,framebuffer,fbout,w,h);
   if (isBeat & 0x80000000) return 0;

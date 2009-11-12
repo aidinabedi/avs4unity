@@ -27,6 +27,9 @@ IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISI
 OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 */
+
+#include "../config.h"
+
 #include <windows.h>
 #include <stdio.h>
 #include <math.h>
@@ -91,7 +94,7 @@ static double SHITCALL getvis(unsigned char *visdata, int bc, int bw, int ch, in
     bc=0;
   }
   if (bc > 575) bc=575;
-  if (bc+bw > 576) bw=576-bc;
+  if (bc+bw > SAMPLES) bw=SAMPLES-bc;
 
 
   if (!ch)
@@ -99,14 +102,14 @@ static double SHITCALL getvis(unsigned char *visdata, int bc, int bw, int ch, in
     for (x = 0; x < bw; x ++) 
     {
       accum+=(visdata[bc]^xorv)-xorv;
-      accum+=(visdata[bc+576]^xorv)-xorv;
+      accum+=(visdata[bc+SAMPLES]^xorv)-xorv;
       bc++;
     }
     return (double)accum / ((double)bw*255.0);
   }
   else 
   {
-    if (ch == 2) visdata+=576;
+    if (ch == 2) visdata+=SAMPLES;
     for (x = 0; x < bw; x ++) accum+=(visdata[bc++]^xorv)-xorv;
     return (double)accum / ((double)bw*127.5);
   }
@@ -115,13 +118,13 @@ static double SHITCALL getvis(unsigned char *visdata, int bc, int bw, int ch, in
 static double SHITCALL  getspec_(double *band, double *bandw, double *chan)
 {
   if (!g_evallib_visdata) return 0.0;
-  return getvis((unsigned char *)g_evallib_visdata,(int)(*band*576.0),(int)(*bandw*576.0),(int)(*chan+0.5),0)*0.5;
+  return getvis((unsigned char *)g_evallib_visdata,(int)(*band*SAMPLES.0),(int)(*bandw*SAMPLES.0),(int)(*chan+0.5),0)*0.5;
 }
 
 static double SHITCALL getosc_(double *band, double *bandw, double *chan)
 {
   if (!g_evallib_visdata) return 0.0;
-  return getvis((unsigned char *)g_evallib_visdata+576*2,(int)(*band*576.0),(int)(*bandw*576.0),(int)(*chan+0.5),128);
+  return getvis((unsigned char *)g_evallib_visdata+SAMPLES*2,(int)(*band*SAMPLES.0),(int)(*bandw*SAMPLES.0),(int)(*chan+0.5),128);
 }
 
 static double SHITCALL gettime_(double *sc)

@@ -24,9 +24,7 @@ CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,
 DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
 DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER
 IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT 
-OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-*/
+OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */ #include "config.h"
 #ifndef _R_DEFS_H_
 #define _R_DEFS_H_
 
@@ -37,7 +35,7 @@ class C_RBASE {
 	public:
 		C_RBASE() { }
 		virtual ~C_RBASE() { };
-		virtual int render(char visdata[2][2][576], int isBeat, int *framebuffer, int *fbout, int w, int h)=0; // returns 1 if fbout has dest
+		virtual int render(char visdata[2][2][SAMPLES], int isBeat, int *framebuffer, int *fbout, int w, int h)=0; // returns 1 if fbout has dest
 		virtual HWND conf(HINSTANCE hInstance, HWND hwndParent){return 0;};
 		virtual char *get_desc()=0;
 		virtual void load_config(unsigned char *data, int len) { }
@@ -60,9 +58,9 @@ class C_RBASE2 : public C_RBASE {
 
     // returns # of threads you desire, <= max_threads, or 0 to not do anything
     // default should return max_threads if you are flexible
-    virtual int smp_begin(int max_threads, char visdata[2][2][576], int isBeat, int *framebuffer, int *fbout, int w, int h) { return 0; }  
-    virtual void smp_render(int this_thread, int max_threads, char visdata[2][2][576], int isBeat, int *framebuffer, int *fbout, int w, int h) { }; 
-    virtual int smp_finish(char visdata[2][2][576], int isBeat, int *framebuffer, int *fbout, int w, int h) { return 0; }; // return value is that of render() for fbstuff etc
+    virtual int smp_begin(int max_threads, char visdata[2][2][SAMPLES], int isBeat, int *framebuffer, int *fbout, int w, int h) { return 0; }  
+    virtual void smp_render(int this_thread, int max_threads, char visdata[2][2][SAMPLES], int isBeat, int *framebuffer, int *fbout, int w, int h) { }; 
+    virtual int smp_finish(char visdata[2][2][SAMPLES], int isBeat, int *framebuffer, int *fbout, int w, int h) { return 0; }; // return value is that of render() for fbstuff etc
 
 };
 

@@ -559,6 +559,10 @@ SOURCE=.\laser\linelist.h
 # End Group
 # Begin Source File
 
+SOURCE=.\AVS2Unity.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\bpm.cpp
 # End Source File
 # Begin Source File
@@ -599,10 +603,6 @@ SOURCE=.\undo.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\AVS2Unity.cpp
-# End Source File
-# Begin Source File
-
 SOURCE=.\wnd.cpp
 # End Source File
 # End Group
@@ -615,11 +615,19 @@ SOURCE=.\ape.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\AVS2Unity.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\bpm.h
 # End Source File
 # Begin Source File
 
 SOURCE=.\cfgwnd.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\config.h
 # End Source File
 # Begin Source File
 
@@ -636,10 +644,6 @@ SOURCE=.\rlib.h
 # Begin Source File
 
 SOURCE=.\undo.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\AVS2Unity.h
 # End Source File
 # Begin Source File
 
