@@ -24,9 +24,7 @@ CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,
 DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
 DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER
 IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT 
-OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-*/
+OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */ #include "config.h"
 #include <windows.h>
 #include <stdio.h>
 #include <commctrl.h>
@@ -354,7 +352,7 @@ static int __inline depthof(int c, int i)
 
 
 	
-int C_RenderListClass::render(char visdata[2][2][576], int isBeat, int *framebuffer, int *fbout, int w, int h)
+int C_RenderListClass::render(char visdata[2][2][SAMPLES], int isBeat, int *framebuffer, int *fbout, int w, int h)
 {
   int is_preinit = (isBeat&0x80000000);
 
@@ -1341,7 +1339,7 @@ int C_RenderListClass::__LoadPresetFromUndo(C_UndoItem &item, int clear)
 
 /// smp fun
 
-void C_RenderListClass::smp_Render(int minthreads, C_RBASE2 *render, char visdata[2][2][576], int isBeat, int *framebuffer, int *fbout, int w, int h)
+void C_RenderListClass::smp_Render(int minthreads, C_RBASE2 *render, char visdata[2][2][SAMPLES], int isBeat, int *framebuffer, int *fbout, int w, int h)
 {
   int x;
   smp_parms.nthreads=minthreads;
@@ -1380,7 +1378,7 @@ DWORD WINAPI C_RenderListClass::smp_threadProc(LPVOID parm)
     if (WaitForMultipleObjects(2,hdls,FALSE,INFINITE) == WAIT_OBJECT_0 + 1) return 0;
 
     smp_parms.render->smp_render(which,smp_parms.nthreads,
-      *(char (*)[2][2][576])smp_parms.vis_data_ptr,
+      *(char (*)[2][2][SAMPLES])smp_parms.vis_data_ptr,
       
       smp_parms.isBeat,smp_parms.framebuffer,smp_parms.fbout,smp_parms.w,smp_parms.h);
     SetEvent(smp_parms.hThreadSignalsDone[which]);

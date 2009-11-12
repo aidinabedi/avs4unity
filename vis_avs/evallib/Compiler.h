@@ -27,6 +27,9 @@ IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISI
 OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 */
+
+#include "../config.h"
+
 #ifndef __COMPILER_H
 #define __COMPILER_H
 
@@ -50,7 +53,7 @@ extern "C" {
  
 
 int compileCode(char *exp);
-void executeCode(int handle, char visdata[2][2][576]);
+void executeCode(int handle, char visdata[2][2][SAMPLES]);
 void freeCode(int handle);
 
 

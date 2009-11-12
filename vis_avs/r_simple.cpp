@@ -24,9 +24,7 @@ CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,
 DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
 DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER
 IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT 
-OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-*/
+OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */ #include "config.h"
 // alphachannel safe 11/21/99
 #include <windows.h>
 #include "r_defs.h"
@@ -43,7 +41,7 @@ class C_THISCLASS : public C_RBASE {
 	public:
 		C_THISCLASS();
 		virtual ~C_THISCLASS();
-		virtual int render(char visdata[2][2][576], int isBeat, int *framebuffer, int *fbout, int w, int h);
+		virtual int render(char visdata[2][2][SAMPLES], int isBeat, int *framebuffer, int *fbout, int w, int h);
 		virtual char *get_desc() { return MOD_NAME; }
 		virtual HWND conf(HINSTANCE hInstance, HWND hwndParent);
 		virtual void load_config(unsigned char *data, int len);
@@ -95,7 +93,7 @@ C_THISCLASS::~C_THISCLASS()
 {
 }
 	
-int C_THISCLASS::render(char visdata[2][2][576], int isBeat, int *framebuffer, int *fbout, int w, int h)
+int C_THISCLASS::render(char visdata[2][2][SAMPLES], int isBeat, int *framebuffer, int *fbout, int w, int h)
 {
   if (!num_colors) return 0;
   if (isBeat&0x80000000) return 0;
@@ -104,7 +102,7 @@ int C_THISCLASS::render(char visdata[2][2][576], int isBeat, int *framebuffer, i
 	float xscale = 288.0f/w;
   int current_color;
   unsigned char *fa_data;
-  char center_channel[576];
+  char center_channel[SAMPLES];
   int which_ch=(effect>>2)&3;
   int y_pos=(effect>>4)&3;
   color_pos++;
@@ -133,7 +131,7 @@ int C_THISCLASS::render(char visdata[2][2][576], int isBeat, int *framebuffer, i
     if ((effect&3)>1) 
       w=1;
 
-    for (x = 0; x < 576; x ++) center_channel[x]=visdata[w][0][x]/2+visdata[w][1][x]/2;
+    for (x = 0; x < SAMPLES; x ++) center_channel[x]=visdata[w][0][x]/2+visdata[w][1][x]/2;
   }
   if (which_ch < 2) fa_data=(unsigned char *)&visdata[(effect&3)>1?1:0][which_ch][0];
   else fa_data=(unsigned char *)center_channel;

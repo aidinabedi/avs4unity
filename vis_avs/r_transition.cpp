@@ -24,9 +24,7 @@ CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,
 DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
 DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER
 IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT 
-OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-*/
+OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */ #include "config.h"
 #include <windows.h>
 #include <stdio.h>
 #include <commctrl.h>
@@ -105,7 +103,7 @@ unsigned int WINAPI C_RenderTransitionClass::m_initThread(LPVOID p)
 	SetThreadPriority(GetCurrentThread(),prios[cfg_render_prio]);
   }
   int *fb=(int *)GlobalAlloc(GPTR,_this->l_w*_this->l_h*sizeof(int));
-  char last_visdata[2][2][576]={0,};
+  char last_visdata[2][2][SAMPLES]={0,};
   g_render_effects2->render(last_visdata,0x80000000,fb,fb,_this->l_w,_this->l_h);
   GlobalFree((HGLOBAL)fb);
 
@@ -185,7 +183,7 @@ int C_RenderTransitionClass::LoadPreset(char *file, int which, C_UndoItem *item)
 
 extern int g_rnd_cnt;
 
-int C_RenderTransitionClass::render(char visdata[2][2][576], int isBeat, int *framebuffer, int *fbout, int w, int h)
+int C_RenderTransitionClass::render(char visdata[2][2][SAMPLES], int isBeat, int *framebuffer, int *fbout, int w, int h)
 {
   if (_dotransitionflag||enabled) g_rnd_cnt=0;
   if (_dotransitionflag==2 || _dotransitionflag == 3)

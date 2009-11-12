@@ -27,6 +27,9 @@ IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISI
 OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 */
+
+#include "../config.h"
+
 #ifdef LASER
 #include <windows.h>
 #include <commctrl.h>
@@ -42,7 +45,7 @@ class C_THISCLASS : public C_RBASE {
 	public:
 		C_THISCLASS();
 		virtual ~C_THISCLASS();
-		virtual int render(char visdata[2][2][576], int isBeat, int *framebuffer, int *fbout, int w, int h); // returns 1 if fbout has dest
+		virtual int render(char visdata[2][2][SAMPLES], int isBeat, int *framebuffer, int *fbout, int w, int h); // returns 1 if fbout has dest
 		virtual char *get_desc() { return MOD_NAME; }
 		virtual HWND conf(HINSTANCE hInstance, HWND hwndParent);
 		virtual void load_config(unsigned char *data, int len);
@@ -90,7 +93,7 @@ C_THISCLASS::~C_THISCLASS()
 }
 
 
-int C_THISCLASS::render(char visdata[2][2][576], int isBeat, int *framebuffer, int *fbout, int w, int h) // returns 1 if fbout has dest
+int C_THISCLASS::render(char visdata[2][2][SAMPLES], int isBeat, int *framebuffer, int *fbout, int w, int h) // returns 1 if fbout has dest
 {
   if (isBeat&0x80000000) return 0;
   if (isBeatDecay) 

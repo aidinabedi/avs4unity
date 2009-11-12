@@ -24,9 +24,7 @@ CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,
 DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
 DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER
 IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT 
-OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-*/
+OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */ #include "config.h"
 #ifndef _R_LIST_H_
 #define _R_LIST_H_
 
@@ -93,7 +91,7 @@ class C_RenderListClass : public C_RBASE {
 
 #define MAX_SMP_THREADS 8
     // smp stuff
-    void smp_Render(int minthreads, C_RBASE2 *render, char visdata[2][2][576], int isBeat, int *framebuffer, int *fbout, int w, int h);
+    void smp_Render(int minthreads, C_RBASE2 *render, char visdata[2][2][SAMPLES], int isBeat, int *framebuffer, int *fbout, int w, int h);
     typedef struct 
     {
       void *vis_data_ptr;
@@ -127,7 +125,7 @@ class C_RenderListClass : public C_RBASE {
     C_RenderListClass(int iroot=0);
 		virtual ~C_RenderListClass();
 
-		virtual int render(char visdata[2][2][576], int isBeat, int *framebuffer, int *fbout, int w, int h);
+		virtual int render(char visdata[2][2][SAMPLES], int isBeat, int *framebuffer, int *fbout, int w, int h);
 		virtual HWND conf(HINSTANCE hInstance, HWND hwndParent);
 		virtual void load_config(unsigned char *data, int len);
 		virtual int  save_config(unsigned char *data);

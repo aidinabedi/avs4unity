@@ -24,9 +24,7 @@ CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,
 DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
 DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER
 IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT 
-OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-*/
+OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */ #include "config.h"
 // notes:
 // any window that remains in foreground should optimally pass 
 // keystrokes to the parent (winamp's) window, so that the user
@@ -52,8 +50,8 @@ typedef struct winampVisModule {
   // the data is filled in according to the respective Nch entry
   int spectrumNch;
   int waveformNch;
-  unsigned char spectrumData[2][576];
-  unsigned char waveformData[2][576];
+  unsigned char spectrumData[2][SAMPLES];
+  unsigned char waveformData[2][SAMPLES];
 
   void (*Config)(struct winampVisModule *this_mod);  // configuration dialog
   int (*Init)(struct winampVisModule *this_mod);     // 0 on success, creates window, etc

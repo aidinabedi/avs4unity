@@ -24,9 +24,7 @@ CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,
 DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
 DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER
 IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT 
-OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-*/
+OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */ #include "config.h"
 #define M_PI 3.14159265358979323846
 
 #include <windows.h>
@@ -52,7 +50,7 @@ class C_THISCLASS : public C_RBASE {
 	public:
 		C_THISCLASS();
 		virtual ~C_THISCLASS();
-		virtual int render(char visdata[2][2][576], int isBeat, int *framebuffer, int *fbout, int w, int h);
+		virtual int render(char visdata[2][2][SAMPLES], int isBeat, int *framebuffer, int *fbout, int w, int h);
 		virtual char *get_desc() { return MOD_NAME; }
 		virtual HWND conf(HINSTANCE hInstance, HWND hwndParent);
 		virtual void load_config(unsigned char *data, int len);
@@ -184,7 +182,7 @@ static __inline int makeint(double t)
   return (int)(t*255.0);
 }
 	
-int C_THISCLASS::render(char visdata[2][2][576], int isBeat, int *framebuffer, int *fbout, int w, int h)
+int C_THISCLASS::render(char visdata[2][2][SAMPLES], int isBeat, int *framebuffer, int *fbout, int w, int h)
 {
   if (need_recompile)
   {
@@ -228,13 +226,13 @@ int C_THISCLASS::render(char visdata[2][2][576], int isBeat, int *framebuffer, i
   int x;
   int current_color;
   unsigned char *fa_data;
-  char center_channel[576];
+  char center_channel[SAMPLES];
   int ws=(which_ch&4)?1:0;
   int xorv=(ws*128)^128;
 
   if ((which_ch&3) >=2)
   {
-    for (x = 0; x < 576; x ++) center_channel[x]=visdata[ws^1][0][x]/2+visdata[ws^1][1][x]/2;
+    for (x = 0; x < SAMPLES; x ++) center_channel[x]=visdata[ws^1][0][x]/2+visdata[ws^1][1][x]/2;
     fa_data=(unsigned char *)center_channel;
   }
   else fa_data=(unsigned char *)&visdata[ws^1][which_ch&3][0];
@@ -283,7 +281,7 @@ int C_THISCLASS::render(char visdata[2][2][576], int isBeat, int *framebuffer, i
     for (a = 0; a < l; a ++)
     {
       int x,y;
-      double r=(a*576.0)/l;
+      double r=((double) a*SAMPLES)/l;
       double s1=r-(int)r;
       double yr=(fa_data[(int)r]^xorv)*(1.0f-s1)+(fa_data[(int)r+1]^xorv)*(s1);
       *var_v = yr/128.0 - 1.0;

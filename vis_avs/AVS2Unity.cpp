@@ -24,9 +24,7 @@ CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,
 DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
 DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER
 IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT 
-OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-*/
+OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */ #include "config.h"
 #include <windows.h>
 #include <math.h>
 #include <process.h>
@@ -73,7 +71,7 @@ static unsigned int WINAPI RenderThread(LPVOID a);
 static CRITICAL_SECTION g_cs;
 #endif
 
-static unsigned char g_visdata[2][2][576];
+static unsigned char g_visdata[2][2][SAMPLES];
 static int g_visdata_pstat;
 
 CRITICAL_SECTION g_render_cs;
@@ -151,14 +149,14 @@ std::vector<int> fb2;
 int avs_render(void* colors, int width, int height, float time)
 {
 	//TODO: fill these with audio output
-	unsigned char spectrumData[2][576];
-	unsigned char waveformData[2][576];
+	unsigned char spectrumData[2][SAMPLES];
+	unsigned char waveformData[2][SAMPLES];
 
 	waveformData[1][0] = 0;
 	waveformData[0][0] = 0;
 
 	int y;
-	for (y = 1; y < 576; y++)
+	for (y = 1; y < SAMPLES; y++)
 	{
 		waveformData[0][y] = waveformData[0][y-1] + (rand()%200 - 100) *.2;
 		waveformData[1][y] = waveformData[1][y-1] + (rand()%200 - 100) *.2;
@@ -184,18 +182,18 @@ int avs_render(void* colors, int width, int height, float time)
 		//return 1;
 	//}
 	if (g_visdata_pstat)
-		for (x = 0; x<  576*2; x ++)
+		for (x = 0; x<  SAMPLES*2; x ++)
 			g_visdata[0][0][x]=g_logtab[(unsigned char)spectrumData[0][x]];
 	else 
 	{
-		for (x = 0; x < 576*2; x ++)
+		for (x = 0; x < SAMPLES*2; x ++)
 		{ 
 			int t=g_logtab[(unsigned char)spectrumData[0][x]];
 			if (g_visdata[0][0][x] < t)
 				g_visdata[0][0][x] = t;
 		}
 	}
-	memcpy(&g_visdata[1][0][0],waveformData,576*2);
+	memcpy(&g_visdata[1][0][0],waveformData,SAMPLES*2);
 	{
     int lt[2]={0,0};
     int x;
@@ -203,7 +201,7 @@ int avs_render(void* colors, int width, int height, float time)
     for (ch = 0; ch < 2; ch ++)
     {
       unsigned char *f=(unsigned char*)&waveformData[ch][0];
-      for (x = 0; x < 576; x ++)
+      for (x = 0; x < SAMPLES; x ++)
       {
         int r= *f++^128;
         r-=128;
@@ -217,7 +215,7 @@ int avs_render(void* colors, int width, int height, float time)
 
     beat_cnt++;
 
-    if (lt[0] >= (beat_peak1*34)/32 && lt[0] > (576*16)) 
+    if (lt[0] >= (beat_peak1*34)/32 && lt[0] > (SAMPLES*16)) 
     {
       if (beat_cnt>0)
       {
@@ -251,8 +249,8 @@ int avs_render(void* colors, int width, int height, float time)
 	beat=g_is_beat;
 	g_is_beat=0;
 
-	char vis_data[2][2][576];
-	memcpy(&vis_data[0][0][0],&g_visdata[0][0][0],576*2*2);
+	char vis_data[2][2][SAMPLES];
+	memcpy(&vis_data[0][0][0],&g_visdata[0][0][0],SAMPLES*2*2);
 
 	int t=g_render_transition->render(vis_data,beat,s?&fb2[0]:&fb[0],s?&fb[0]:&fb2[0],width,height);
 	if (t&1) s^=1;

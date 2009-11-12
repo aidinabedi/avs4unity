@@ -21,6 +21,7 @@
 	good luck and have fun!
 **/
 
+#include "../config.h"
 #include <windows.h>
 #include "resource.h"
 #include "avs_ape.h"
@@ -48,7 +49,7 @@ class C_THISCLASS : public C_RBASE
 		C_THISCLASS();
 		virtual ~C_THISCLASS();
 
-		virtual int render(char visdata[2][2][576], int isBeat, int *framebuffer, int *fbout, int w, int h);
+		virtual int render(char visdata[2][2][SAMPLES], int isBeat, int *framebuffer, int *fbout, int w, int h);
 		
 		virtual HWND conf(HINSTANCE hInstance, HWND hwndParent);
 		virtual char *get_desc();
@@ -167,7 +168,7 @@ C_THISCLASS::~C_THISCLASS()
 // isBeat is 1 if a beat has been detected.
 // visdata is in the format of [spectrum:0,wave:1][channel][band].
 
-int C_THISCLASS::render(char visdata[2][2][576], int isBeat, int *framebuffer, int *fbout, int w, int h)
+int C_THISCLASS::render(char visdata[2][2][SAMPLES], int isBeat, int *framebuffer, int *fbout, int w, int h)
 {
 	int halfw;
 	int halfh;

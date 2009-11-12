@@ -24,9 +24,7 @@ CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,
 DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
 DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER
 IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT 
-OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-*/
+OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */ #include "config.h"
 #include <windows.h>
 #include <stdlib.h>
 #include <vfw.h>
@@ -46,7 +44,7 @@ class C_THISCLASS : public C_RBASE {
 	public:
 		C_THISCLASS();
 		virtual ~C_THISCLASS();
-		virtual int render(char visdata[2][2][576], int isBeat, int *framebuffer, int *fbout, int w, int h);
+		virtual int render(char visdata[2][2][SAMPLES], int isBeat, int *framebuffer, int *fbout, int w, int h);
 		virtual char *get_desc() { return MOD_NAME; }
 		virtual HWND conf(HINSTANCE hInstance, HWND hwndParent);
 		virtual void load_config(unsigned char *data, int len);
@@ -269,7 +267,7 @@ void C_THISCLASS::CalcWaterSludge(int npage, int density)
 // w and h are the width and height of the screen, in pixels.
 // isBeat is 1 if a beat has been detected.
 // visdata is in the format of [spectrum:0,wave:1][channel][band].
-int C_THISCLASS::render(char visdata[2][2][576], int isBeat, int *framebuffer, int *fbout, int w, int h)
+int C_THISCLASS::render(char visdata[2][2][SAMPLES], int isBeat, int *framebuffer, int *fbout, int w, int h)
 {
   if (!enabled) return 0;
   int l,i;
