@@ -17,8 +17,15 @@ int resize(HWND hwnd)
 {
 	RECT r;
 	GetClientRect(hwnd,&r);
-	DDraw_Resize(r.right-r.left, r.bottom-r.top, 0);
-	avs_resize(r.right-r.left, r.bottom-r.top);
+	int width = r.right-r.left;
+	int height = r.bottom-r.top;
+
+	DDraw_Resize(width, height, 0);
+	avs_resize(width, height);
+
+	char title[1024] = {0};
+	_snprintf(title, sizeof(title)-1, "AVS2Unity %dx%d", width, height);
+	SetWindowText(hwnd, title);
 	return 0;
 }
 
