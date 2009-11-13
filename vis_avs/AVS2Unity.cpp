@@ -36,6 +36,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
 #include "resource.h"
 #include "bpm.h"
 #include "AVS2Unity.h"
+#include "fft.h"
 
 #include <string>
 #include <vector>
@@ -64,14 +65,13 @@ char *verstr=
 
 static unsigned int WINAPI RenderThread(LPVOID a);
 
-//HANDLE g_hThread;
+HANDLE g_hThread;
 //volatile int g_ThreadQuit;
 
 #ifndef WA3_COMPONENT
 static CRITICAL_SECTION g_cs;
 #endif
 
-static unsigned char g_visdata[2][2][SAMPLES];
 static int g_visdata_pstat;
 
 CRITICAL_SECTION g_render_cs;
@@ -86,11 +86,15 @@ HINSTANCE hRich;
 
 std::string g_init_path;
 
-int avs_init(const char* path)
+std::vector<int> fb;
+std::vector<int> fb2;
+int g_width, g_height;
+FFT g_FFT;
+
+int avs_init(const char* path, int width, int height)
 {
 	g_init_path = path;
 
-	DWORD id;
   FILETIME ft;
 #if 0//syntax highlighting
   if (!hRich) hRich=LoadLibrary("RICHED32.dll");
@@ -118,17 +122,15 @@ int avs_init(const char* path)
 
 	AVS_EEL_IF_init();
 
-	if (Wnd_Init(path))
+	Wnd_Init(path);
+
+	for (int x = 0; x < 256; x ++)
 	{
-		int x;
-		for (x = 0; x < 256; x ++)
-		{
-			double a=log(x*60.0/255.0 + 1.0)/log(60.0);
-			int t=(int)(a*255.0);
-			if (t<0)t=0;
-			if (t>255)t=255;
-			g_logtab[x]=(unsigned char )t;
-		}
+		double a=log(x*60.0/255.0 + 1.0)/log(60.0);
+		int t=(int)(a*255.0);
+		if (t<0)t=0;
+		if (t>255)t=255;
+		g_logtab[x]=(unsigned char )t;
 	}
 
 	initBpm();
@@ -137,39 +139,54 @@ int avs_init(const char* path)
 
 	//CfgWnd_Create(this_mod);
 
-	//g_hThread=(HANDLE)_beginthreadex(NULL,0,RenderThread,0,0,(unsigned int *)&id);
+	avs_resize(width, height);
+
+	g_FFT.Init(SAMPLES, SAMPLES);
+
+	int id;
+	g_hThread=(HANDLE)_beginthreadex(NULL,0,RenderThread,0,0,(unsigned int *)&id);
   //main_setRenderThreadPriority();
 
-  return 0;
+	return 0;
 }
 
-std::vector<int> fb;
-std::vector<int> fb2;
+int avs_resize(int width, int height)
+{
+	g_width = width;
+	g_height = height;
+	int pixels = width * height;
+	fb.resize(pixels);
+	fb2.resize(pixels);
+	memset(&fb[0], 0, pixels*sizeof(int));
+	memset(&fb2[0], 0, pixels*sizeof(int));
+	return 0;
+}
 
-int avs_render(void* colors, int width, int height, float time)
+int avs_render(float* colors)
 {
 	//TODO: fill these with audio output
-	unsigned char spectrumData[2][SAMPLES];
-	unsigned char waveformData[2][SAMPLES];
+	char vis_data[2][2][SAMPLES];
+	float spectrumData[2][SAMPLES];
+	int i;
 
-	waveformData[1][0] = 0;
-	waveformData[0][0] = 0;
-
-	int y;
-	for (y = 1; y < SAMPLES; y++)
+	
+	// randomize waveform data
+	vis_data[1][1][0] = 0;
+	vis_data[1][0][0] = 0;
+	for (i = 1; i < SAMPLES; i++)
 	{
-		waveformData[0][y] = waveformData[0][y-1] + (rand()%200 - 100) *.2;
-		waveformData[1][y] = waveformData[1][y-1] + (rand()%200 - 100) *.2;
+		vis_data[1][0][i] = vis_data[1][0][i-1] + (rand()%512 - 256);
+		vis_data[1][1][i] = vis_data[1][1][i-1] + (rand()%512 - 256);
 	}
 
-	int pixels = width * height;
-	if (fb.size() != pixels)
-	{
-		fb.resize(pixels);
-		fb2.resize(pixels);
-		memset(&fb[0], 0, pixels*sizeof(int));
-		memset(&fb2[0], 0, pixels*sizeof(int));
-	}
+	float buffer[2][SAMPLES];
+	for (i = 0; i < SAMPLES*2; i++)
+		buffer[0][i]=(float)( vis_data[1][0][i] - 128.0 ) / 64;
+
+	g_FFT.time_to_frequency_domain(buffer[0], spectrumData[0]);
+	g_FFT.time_to_frequency_domain(buffer[1], spectrumData[1]);
+
+	//g_PCM.addPCM8_512(waveformData);
 
 
 #ifndef WA3_COMPONENT
@@ -183,24 +200,23 @@ int avs_render(void* colors, int width, int height, float time)
 	//}
 	if (g_visdata_pstat)
 		for (x = 0; x<  SAMPLES*2; x ++)
-			g_visdata[0][0][x]=g_logtab[(unsigned char)spectrumData[0][x]];
+			vis_data[0][0][x]=g_logtab[(unsigned char) (spectrumData[0][x] * 128.0f)];
 	else 
 	{
 		for (x = 0; x < SAMPLES*2; x ++)
 		{ 
-			int t=g_logtab[(unsigned char)spectrumData[0][x]];
-			if (g_visdata[0][0][x] < t)
-				g_visdata[0][0][x] = t;
+			int t=g_logtab[(unsigned char) (spectrumData[0][x] * 128.0f)];
+			if (vis_data[0][0][x] < t)
+				vis_data[0][0][x] = t;
 		}
 	}
-	memcpy(&g_visdata[1][0][0],waveformData,SAMPLES*2);
 	{
     int lt[2]={0,0};
     int x;
     int ch;
     for (ch = 0; ch < 2; ch ++)
     {
-      unsigned char *f=(unsigned char*)&waveformData[ch][0];
+      unsigned char *f=(unsigned char*)&vis_data[1][ch][0];
       for (x = 0; x < SAMPLES; x ++)
       {
         int r= *f++^128;
@@ -249,16 +265,18 @@ int avs_render(void* colors, int width, int height, float time)
 	beat=g_is_beat;
 	g_is_beat=0;
 
-	char vis_data[2][2][SAMPLES];
-	memcpy(&vis_data[0][0][0],&g_visdata[0][0][0],SAMPLES*2*2);
+	int t;
+	if (s)
+		t=g_render_transition->render(vis_data,beat,&fb2[0],&fb[0],g_width,g_height);
+	else
+		t=g_render_transition->render(vis_data,beat,&fb[0],&fb2[0],g_width,g_height);
 
-	int t=g_render_transition->render(vis_data,beat,s?&fb2[0]:&fb[0],s?&fb[0]:&fb2[0],width,height);
 	if (t&1) s^=1;
 
 	unsigned char *src = (unsigned char *) (s?&fb2[0]:&fb[0]);
 	float *dst = (float *) colors;
 
-	int i, size = pixels*4;
+	int size = g_width*g_height*sizeof(int);
     for (i = 0; i < size; i += 4)
 	{
 		dst[i] = ((float) src[i])*0.0039215686274509803f;
@@ -279,44 +297,49 @@ void avs_quit()
 {
 #define DS(x) 
   //MessageBox(this_mod->hwndParent,x,"AVS Debug",MB_OK)
-	//if (g_hThread)
+	if (g_hThread)
 	{
-    //DS("Waitin for thread to quit\n");
-		//g_ThreadQuit=1;
-		//if (WaitForSingleObject(g_hThread,10000) != WAIT_OBJECT_0)
-		//{
-      //DS("Terminated thread (BAD!)\n");
-			//MessageBox(NULL,"error waiting for thread to quit","a",MB_TASKMODAL);
-      //TerminateThread(g_hThread,0);
-		//}
+		DS("Waitin for thread to quit\n");
+			//g_ThreadQuit=1;
+		if (WaitForSingleObject(g_hThread,10000) != WAIT_OBJECT_0)
+		{
+			DS("Terminated thread (BAD!)\n");
+			TerminateThread(g_hThread,0);
+		}
 
-    //DS("Calling cfgwnd_destroy\n");
-		//CfgWnd_Destroy();
-    DS("Calling render_quit\n");
-		Render_Quit(g_init_path.c_str());
+		//DS("Calling cfgwnd_destroy\n");
+			//CfgWnd_Destroy();
+		DS("Calling render_quit\n");
+			Render_Quit(g_init_path.c_str());
 
-    DS("Calling wnd_quit\n");
-		Wnd_Quit(g_init_path.c_str());
+		DS("Calling wnd_quit\n");
+			Wnd_Quit(g_init_path.c_str());
 
-    //DS("closing thread handle\n");
-		//CloseHandle(g_hThread);
-		//g_hThread=NULL;
+		DS("closing thread handle\n");
+			CloseHandle(g_hThread);
+			g_hThread=NULL;
 
-    DS("calling eel quit\n");
-    AVS_EEL_IF_quit();
+		DS("calling eel quit\n");
+		AVS_EEL_IF_quit();
 
-    DS("cleaning up critsections\n");
+		DS("cleaning up critsections\n");
 #ifndef WA3_COMPONENT
 		//DeleteCriticalSection(&g_cs);
 #endif
 		//DeleteCriticalSection(&g_render_cs);    
 
-    DS("smp_cleanupthreads\n");
-    C_RenderListClass::smp_cleanupthreads();
+		DS("smp_cleanupthreads\n");
+		C_RenderListClass::smp_cleanupthreads();
 	}
 #undef DS
 #if 0//syntax highlighting
   if (hRich) FreeLibrary(hRich);
   hRich=0;
 #endif
+}
+
+static unsigned int WINAPI RenderThread(LPVOID a)
+{
+	_endthreadex(0);
+	return 0;
 }

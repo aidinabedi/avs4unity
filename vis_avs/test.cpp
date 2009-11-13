@@ -17,7 +17,8 @@ int resize(HWND hwnd)
 {
 	RECT r;
 	GetClientRect(hwnd,&r);
-	DDraw_Resize(r.right-r.left,r.bottom-r.top, 0);
+	DDraw_Resize(r.right-r.left, r.bottom-r.top, 0);
+	avs_resize(r.right-r.left, r.bottom-r.top);
 	return 0;
 }
 
@@ -130,8 +131,10 @@ int WINAPI WinMain(
 
 	//printf("init...\n");
 	DDraw_Init(hwnd);
+	RECT r;
+	GetClientRect(hwnd,&r);
+	avs_init("", r.right-r.left, r.bottom-r.top);
 	resize(hwnd);
-	avs_init("");
 
 	//printf("loop ...\n");
     // Step 3: The Message Loop
@@ -153,9 +156,8 @@ int WINAPI WinMain(
 		Sleep(mod.delayMs);
 		
 		DDraw_Enter(&w,&h,&fb,&fb2);
-
-		pixels.resize(w*h*4);
-		avs_render(&pixels[0], w, h, 0);
+		if (pixels.size() != w*h*4) pixels.resize(w*h*4);
+		avs_render(&pixels[0]);
 
 		for (i = 0; i < pixels.size(); i++)
 			((unsigned char*) fb)[i] = (unsigned char) (pixels[i] * 255);
