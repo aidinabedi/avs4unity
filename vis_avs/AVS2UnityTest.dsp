@@ -93,6 +93,10 @@ SOURCE=.\draw.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\fftsg.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\test.cpp
 # End Source File
 # End Group

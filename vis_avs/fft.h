@@ -27,16 +27,44 @@ IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISI
 OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 */
-#define DLLEXPORT __declspec( dllexport )
 
-extern "C" {
-	DLLEXPORT int avs_init(const char* path, int width, int height);
-	DLLEXPORT void avs_quit();
+#ifndef __NULLSOFT_DX8_PLUGIN_SHELL_FFT_H__
+#define __NULLSOFT_DX8_PLUGIN_SHELL_FFT_H__ 1
 
-	DLLEXPORT int avs_render(float* colors);
-	DLLEXPORT int avs_resize(int width, int height);
 
-	DLLEXPORT void avs_next_preset();
-	DLLEXPORT void avs_previous_preset();
-	DLLEXPORT void avs_random_preset();
-}
+class FFT
+{
+public:
+    FFT();
+    ~FFT();
+    void Init(int samples_in, int samples_out, int bEqualize=1, float envelope_power=1.0f);
+    void time_to_frequency_domain(float *in_wavedata, float *out_spectraldata);
+    int  GetNumFreq() { return NFREQ; };
+    void CleanUp();
+private:
+    int m_ready;
+    int m_samples_in;
+    int NFREQ;
+
+    void InitEnvelopeTable(float power);
+    void InitEqualizeTable();
+    void InitBitRevTable();
+    void InitCosSinTable();
+    
+    int   *bitrevtable;
+    float *envelope;
+    float *equalize;
+    float *temp1;
+    float *temp2;
+    float (*cossintable)[2];
+};
+
+
+
+
+
+
+
+
+
+#endif

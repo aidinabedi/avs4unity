@@ -575,6 +575,14 @@ SOURCE=.\debug.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\fft.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\recorder.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\render.cpp
 # End Source File
 # Begin Source File
@@ -632,6 +640,14 @@ SOURCE=.\config.h
 # Begin Source File
 
 SOURCE=.\debug.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\fft.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\recorder.h
 # End Source File
 # Begin Source File
 
