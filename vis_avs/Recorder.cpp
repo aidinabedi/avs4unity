@@ -14,42 +14,6 @@ static char THIS_FILE[]=__FILE__;
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
 
-void CALLBACK waveInProc(HWAVEIN hwi, UINT uMsg, DWORD dwInstance, DWORD dwParam1, DWORD dwParam2)
-{
-	Recorder* pRecorder = NULL;
-	switch (uMsg)
-	{
-	case WIM_OPEN:
-		break;
-	case WIM_DATA:
-		//if ((((LPWAVEHDR)dwParam1)->dwFlags) == WHDR_DONE)
-		{
-			pRecorder = (Recorder*)(((LPWAVEHDR)dwParam1)->dwUser);
-			pRecorder->m_lpWaveHdr = (LPWAVEHDR)dwParam1;
-			SetEvent(pRecorder->m_hEvent);
-		}
-		break;
-	case WIM_CLOSE:
-		break;
-	default:
-		break;
-	}
-}
-DWORD CALLBACK RecorderThreadFunc(LPVOID lpThreadData)
-{
-	Recorder* pRecorder = NULL;
-	pRecorder = (Recorder*)lpThreadData;
-	while (pRecorder->IsRecording())
-	{
-		WaitForSingleObject(pRecorder->m_hEvent,INFINITE);
-		pRecorder->ProcessNextBuffer(pRecorder->m_lpWaveHdr);
-	}
-	return 0;
-}
-//////////////////////////////////////////////////////////////////////
-// Construction/Destruction
-//////////////////////////////////////////////////////////////////////
-
 Recorder::Recorder(int nBufferLength)
 {
 	m_bRecording = FALSE;
@@ -58,11 +22,8 @@ Recorder::Recorder(int nBufferLength)
 	m_PcmFormat.wChannels = 2;
 	m_PcmFormat.dwSampleRate = 44100;
 	m_dwBufferSize = (nBufferLength * m_PcmFormat.wChannels * m_PcmFormat.wBitsPerSample / 8);
-	fnProcessBuffer = NULL;
 	m_lpWaveHdr = NULL;
 	
-	m_hEvent = NULL;
-	m_hThread = NULL;
 	for(int i=0; i<MAXNUMOFBUFFER; i++)
 	{
 		m_hWaveInHdr[i] = NULL;
@@ -77,11 +38,8 @@ Recorder::Recorder(PCMFORMAT pcm,int nBufferLength)
 	m_PcmFormat.wChannels = pcm.wChannels;
 	m_PcmFormat.dwSampleRate = pcm.dwSampleRate;
 	m_dwBufferSize = (nBufferLength * m_PcmFormat.wChannels * m_PcmFormat.wBitsPerSample / 8);
-	fnProcessBuffer = NULL;
 	m_lpWaveHdr = NULL;
 	
-	m_hEvent = NULL;
-	m_hThread = NULL;
 	for(int i=0; i<MAXNUMOFBUFFER; i++)
 	{
 		m_hWaveInHdr[i] = NULL;
@@ -96,11 +54,8 @@ Recorder::Recorder(WORD wBitsPerSample,WORD wChannels,DWORD dwSampleRate,int nBu
 	m_PcmFormat.wChannels = wChannels;
 	m_PcmFormat.dwSampleRate = dwSampleRate;
 	m_dwBufferSize = (nBufferLength * m_PcmFormat.wChannels * m_PcmFormat.wBitsPerSample / 8);
-	fnProcessBuffer = NULL;
 	m_lpWaveHdr = NULL;
 
-	m_hEvent = NULL;
-	m_hThread = NULL;
 	for(int i=0; i<MAXNUMOFBUFFER; i++)
 	{
 		m_hWaveInHdr[i] = NULL;
@@ -114,7 +69,6 @@ Recorder::~Recorder()
 		Stop();
 	if(m_bDeviceOpen)
         Close();
-	fnProcessBuffer = NULL;
 }
 void Recorder::Open(DWORD dwCallBack, DWORD dwCallbackType,MCIDEVICEID wMCIDeviceID)
 {
@@ -123,8 +77,6 @@ void Recorder::Open(DWORD dwCallBack, DWORD dwCallbackType,MCIDEVICEID wMCIDevic
 		//TRACE("Device Already Opened. Please Stop Recorder before attempting to Open\n");
 		return;
 	}
-	if (dwCallBack == NULL)
-		dwCallBack = (DWORD)waveInProc;
 
 	for(int i=0; i<MAXNUMOFBUFFER; i++)
 	{
@@ -152,7 +104,6 @@ void Recorder::Open(DWORD dwCallBack, DWORD dwCallbackType,MCIDEVICEID wMCIDevic
 		return;
 	m_waveClass.lpData = this;
 	m_hWaveIn = (HWAVEIN)m_waveClass.hWave;
-	m_hEvent = CreateEvent(NULL,FALSE,FALSE,NULL);
     m_bDeviceOpen=TRUE;
 }
 void Recorder::Start()
@@ -175,11 +126,8 @@ void Recorder::Start()
 	}
 	// Begin sampling
 	m_bRecording = TRUE;
-	m_hThread = CreateThread(NULL,NULL,RecorderThreadFunc,this,NULL,NULL);
 	waveInStart(m_hWaveIn);
 	//ASSERT(m_hThread!=NULL);
-	SetPriorityClass(m_hThread,REALTIME_PRIORITY_CLASS);
-	SetThreadPriority(m_hThread,THREAD_PRIORITY_HIGHEST);
 }
 void Recorder::Stop()
 {
@@ -194,8 +142,6 @@ void Recorder::Close()
 {
 	if(m_bRecording)
         Stop();
-	if (m_hThread != NULL)
-		CloseHandle(m_hThread);
 	if(m_bDeviceOpen)
 		waveInClose(m_hWaveIn);
 	for(int i=0; i<MAXNUMOFBUFFER; i++)
@@ -212,7 +158,6 @@ void Recorder::Close()
 	}
 	m_bDeviceOpen=FALSE;
 	m_bRecording = FALSE;
-	m_hThread = NULL;
 }
 void Recorder::SetFormat(LPPCMFORMAT lpPcmFormat)
 {
@@ -237,10 +182,8 @@ BOOL Recorder::IsDeviceOpen()
 	return m_bDeviceOpen;
 }
 
-void Recorder::ProcessNextBuffer(LPWAVEHDR pwh)
+void Recorder::ReuseHeader(LPWAVEHDR pwh)
 {
-	if (fnProcessBuffer != NULL)
-		fnProcessBuffer(m_lpData,pwh);
 	waveInUnprepareHeader(m_hWaveIn, pwh, sizeof(WAVEHDR));
 	waveInPrepareHeader (m_hWaveIn, pwh, sizeof(WAVEHDR));
 	waveInAddBuffer(m_hWaveIn, pwh, sizeof(WAVEHDR));
