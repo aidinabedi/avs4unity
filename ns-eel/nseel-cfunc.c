@@ -203,12 +203,11 @@ __declspec ( naked ) void nseel_asm_exp(void)
 __declspec ( naked ) void nseel_asm_exp_end(void) {}
 
 //---------------------------------------------------------------------------------------------------------------
-static double (*__floor)(double) = &floor;
 __declspec ( naked ) void nseel_asm_floor(void)
 {
   FUNC1_ENTER
 
-  *__nextBlock = __floor(*parm_a);
+  *__nextBlock = floor(*parm_a);
 
   FUNC_LEAVE
 }
