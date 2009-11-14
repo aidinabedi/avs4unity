@@ -37,22 +37,17 @@ public:
 	void Close();
 	void Start();
 	void Stop();
-	void ProcessNextBuffer(LPWAVEHDR pwh);
+	void ReuseHeader(LPWAVEHDR pwh);
 	void SetFormat(LPPCMFORMAT lpPcmFormat);
 	void SetFormat(WORD wBitsPerSample,WORD wChannels,DWORD dwSampleRate);
 	BOOL IsRecording();
 	BOOL IsDeviceOpen();
-	void SetBufferFunction(void* lpData, ProcessBuffer fnProcess) { m_lpData = lpData, fnProcessBuffer = fnProcess; }
 	DWORD GetPosition();
 	BOOL Pause();
 	BOOL Continue();
 	BOOL IsFormatSupported(WAVEFORMATEX wfEx, UINT nDev=WAVE_MAPPER);
-	HANDLE m_hEvent;
 	LPWAVEHDR m_lpWaveHdr;
 protected:
-	void* m_lpData;
-	HANDLE m_hThread;
-	ProcessBuffer fnProcessBuffer;
 	WAVECLASS m_waveClass;
 	GLOBALHANDLE m_hWaveInHdr[MAXNUMOFBUFFER];
 	LPWAVEHDR m_lpWaveInHdr[MAXNUMOFBUFFER];

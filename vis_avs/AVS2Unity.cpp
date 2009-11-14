@@ -37,6 +37,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
 #include "bpm.h"
 #include "AVS2Unity.h"
 #include "fft.h"
+#include "Recorder.h"
 
 #include <string>
 #include <vector>
@@ -45,6 +46,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
 #include "debug.h"
 #include "avs_eelif.h"
 
+char g_vis_data[2][2][SAMPLES] = { 0 };
 static unsigned char g_logtab[256];
 
 char *verstr=
@@ -61,16 +63,11 @@ static unsigned int WINAPI RenderThread(LPVOID a);
 HANDLE g_hThread;
 DWORD g_ThreadId;
 HANDLE g_hReadyEvent;
-//volatile int g_ThreadQuit;
 
 static int g_is_beat;
 char g_path[1024];
 
 int beat_peak1,beat_peak2, beat_cnt,beat_peak1_peak;
-
-#if 0//syntax highlighting
-HINSTANCE hRich;
-#endif
 
 std::string g_init_path;
 
@@ -79,6 +76,7 @@ std::vector<int> g_framebuffer2;
 std::vector<float> g_frameresult;
 int g_width, g_height, g_size;
 FFT g_FFT;
+Recorder g_Recorder(8, 2, 44100, SAMPLES);
 
 int waitToReady()
 {
@@ -88,15 +86,16 @@ int waitToReady()
 	return 0;
 }
 
+void initRandom()
+{
+	FILETIME ft;
+	GetSystemTimeAsFileTime(&ft);
+	srand(ft.dwLowDateTime|ft.dwHighDateTime^GetCurrentThreadId());
+}
+
 int avs_init(const char* path, int width, int height)
 {
 	g_init_path = path;
-
-	FILETIME ft;
-
-	GetSystemTimeAsFileTime(&ft);
-	srand(ft.dwLowDateTime|ft.dwHighDateTime^GetCurrentThreadId());
-
 
 	strncpy(g_path, path, MAX_PATH);
 
@@ -135,10 +134,8 @@ int avs_init(const char* path, int width, int height)
 	g_hReadyEvent = CreateEvent(NULL,FALSE,FALSE,NULL);
 
 	g_hThread=(HANDLE)_beginthreadex(NULL,0,RenderThread,0,0,(unsigned int *) &g_ThreadId);
+
 	avs_resize(width, height);
-
-  //main_setRenderThreadPriority();
-
 	return 0;
 }
 
@@ -179,7 +176,7 @@ int avs_render(float* colors)
 	return 0;
 }
 
-void avs_quit()
+void avs_quit(int save)
 {
 #define DS(x) 
   //MessageBox(this_mod->hwndParent,x,"AVS Debug",MB_OK)
@@ -187,24 +184,27 @@ void avs_quit()
 	{
 		PostThreadMessage(g_ThreadId, WM_QUIT, 0, 0);
 		DS("Waitin for thread to quit\n");
-			//g_ThreadQuit=1;
+
 		if (WaitForSingleObject(g_hThread,10000) != WAIT_OBJECT_0)
 		{
 			DS("Terminated thread (BAD!)\n");
 			TerminateThread(g_hThread,0);
 		}
 
+		g_FFT.CleanUp();
+		g_Recorder.Close();
+
 		//DS("Calling cfgwnd_destroy\n");
-			//CfgWnd_Destroy();
+		//CfgWnd_Destroy();
 		DS("Calling render_quit\n");
-			Render_Quit(g_init_path.c_str());
+		Render_Quit(g_init_path.c_str(), save);
 
 		DS("Calling wnd_quit\n");
-			Wnd_Quit(g_init_path.c_str());
+		Wnd_Quit(g_init_path.c_str());
 
 		DS("closing thread handle\n");
-			CloseHandle(g_hThread);
-			g_hThread=NULL;
+		CloseHandle(g_hThread);
+		g_hThread=NULL;
 
 		DS("calling eel quit\n");
 		AVS_EEL_IF_quit();
@@ -220,24 +220,13 @@ void avs_quit()
 
 void renderOneFrame(float* colors)
 {
-	//TODO: fill these with audio output
-	char vis_data[2][2][SAMPLES];
 	float spectrumData[2][SAMPLES];
 	float waveformData[2][SAMPLES];
 	int i;
 
-	
-	// randomize waveform data
-	vis_data[1][1][0] = 0;
-	vis_data[1][0][0] = 0;
-	for (i = 1; i < SAMPLES; i++)
-	{
-		vis_data[1][0][i] = vis_data[1][0][i-1] + (rand()%512 - 256);
-		vis_data[1][1][i] = vis_data[1][1][i-1] + (rand()%512 - 256);
-	}
-
+	unsigned char* wave = (unsigned char*) &g_vis_data[1][0][0];
 	for (i = 0; i < SAMPLES*2; i++)
-		waveformData[0][i]=(float)( vis_data[1][0][i] - 128.0 ) / 64;
+		waveformData[0][i]=(float)((wave[i] ^ 128) - 128);
 
 	g_FFT.time_to_frequency_domain(waveformData[0], spectrumData[0]);
 	g_FFT.time_to_frequency_domain(waveformData[1], spectrumData[1]);
@@ -254,7 +243,7 @@ void renderOneFrame(float* colors)
 		//return 1;
 	//}
 	for (x = 0; x<  SAMPLES*2; x ++)
-		vis_data[0][0][x]=g_logtab[(unsigned char) (spectrumData[0][x] * 128.0f)];
+		g_vis_data[0][0][x]=g_logtab[(unsigned char) (spectrumData[0][x]) ];
 
 	{
 		int lt[2]={0,0};
@@ -262,7 +251,7 @@ void renderOneFrame(float* colors)
 		int ch;
 		for (ch = 0; ch < 2; ch ++)
 		{
-		  unsigned char *f=(unsigned char*)&vis_data[1][ch][0];
+		  unsigned char *f=(unsigned char*)&g_vis_data[1][ch][0];
 		  for (x = 0; x < SAMPLES; x ++)
 		  {
 			int r= *f++^128;
@@ -313,9 +302,9 @@ void renderOneFrame(float* colors)
 
 	int t;
 	if (s)
-		t=g_render_transition->render(vis_data,beat,&g_framebuffer2[0],&g_framebuffer[0],g_width,g_height);
+		t=g_render_transition->render(g_vis_data,beat,&g_framebuffer2[0],&g_framebuffer[0],g_width,g_height);
 	else
-		t=g_render_transition->render(vis_data,beat,&g_framebuffer[0],&g_framebuffer2[0],g_width,g_height);
+		t=g_render_transition->render(g_vis_data,beat,&g_framebuffer[0],&g_framebuffer2[0],g_width,g_height);
 
 	if (t&1) s^=1;
 
@@ -337,12 +326,73 @@ void renderOneFrame(float* colors)
 #endif
 }
 
+void processWaveData(WAVEHDR* hdr)
+{
+	memcpy(&g_vis_data[1][0][0], hdr->lpData, hdr->dwBytesRecorded);
+	g_Recorder.ReuseHeader(hdr);
+}
+
+void randomizeWaveData()
+{
+	g_vis_data[1][0][0] = 0;
+	g_vis_data[1][1][0] = 0;
+	for (int i = 1; i < SAMPLES; i++)
+	{
+		g_vis_data[1][0][i] = g_vis_data[1][0][i-1] + (rand()%512 - 256);
+		g_vis_data[1][1][i] = g_vis_data[1][1][i-1] + (rand()%512 - 256);
+	}
+}
+
+UINT findAudioOutput()
+{
+	static const char* names[] =
+	{
+		"stereo mix",
+		"wave out mix",
+		"what u hear",
+		"soundcard out",
+		NULL
+	};
+
+	WAVEINCAPS wic;
+	UINT numDevs = waveInGetNumDevs();
+	UINT x, y;
+
+	for (x = 0; x < numDevs; x++)
+	{
+		if (waveInGetDevCaps(x,&wic,sizeof(WAVEINCAPS)) == MMSYSERR_NOERROR)
+		{
+			for (y = 0; wic.szPname[y] != '\0'; y++)
+				wic.szPname[y] = (char)tolower(wic.szPname[y]);
+			
+			for (y = 0; names[y] != NULL; y++)
+			{
+				if (strstr(wic.szPname, names[y])) return x;
+			}
+		}
+	}
+
+	return WAVE_MAPPER;
+}
+
+void initAudioDevice()
+{
+	UINT deviceId = findAudioOutput();
+	if (deviceId != WAVE_MAPPER)
+	{
+		g_Recorder.Open((DWORD) GetCurrentThreadId(), CALLBACK_THREAD, deviceId);
+		g_Recorder.Start();
+	}
+}
+
 static unsigned int WINAPI RenderThread(LPVOID a)
 {
 	MSG msg;
 
-	// create message queue
-	PeekMessage(&msg, NULL, WM_USER, WM_USER, PM_NOREMOVE);
+	PeekMessage(&msg, NULL, WM_USER, WM_USER, PM_NOREMOVE); // create message queue
+	initAudioDevice();
+	initRandom();
+
 	SetEvent(g_hReadyEvent);
 
 	while (GetMessage(&msg, 0, 0, 0))
@@ -350,10 +400,20 @@ static unsigned int WINAPI RenderThread(LPVOID a)
 		switch (msg.message) {
 
 			case WM_PAINT:
+				if (!g_Recorder.IsDeviceOpen()) randomizeWaveData();
 				renderOneFrame(&g_frameresult[0]);
 				SetEvent(g_hReadyEvent);
+				break;
+
+			case WIM_DATA:
+				processWaveData((WAVEHDR*)msg.lParam);
+				break;
+
 		}
 	}
+
+	g_Recorder.Stop();
+	g_Recorder.Close();
 
 	CloseHandle(g_hReadyEvent);
 	_endthreadex(0);
