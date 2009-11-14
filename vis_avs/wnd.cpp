@@ -160,7 +160,7 @@ char *extension(char *fn)
   return (s+1);
 }
 
-int g_config_smp_mt=2,g_config_smp=0;
+int g_config_smp_mt=2,g_config_smp=1;
 
 int cfg_fs_dblclk=1;
 
@@ -183,7 +183,7 @@ int Wnd_Init(const char* path)
     g_laser_nomessage=GetPrivateProfileInt(AVS_SECTION,"laser_nomessage",0,INI_FILE);
     g_laser_zones=GetPrivateProfileInt(AVS_SECTION,"laser_zones",1,INI_FILE);
 #else
-    g_config_smp=GetPrivateProfileInt(AVS_SECTION,"smp",0,INI_FILE);
+    g_config_smp=GetPrivateProfileInt(AVS_SECTION,"smp",1,INI_FILE);
     g_config_smp_mt=GetPrivateProfileInt(AVS_SECTION,"smp_mt",2,INI_FILE);
 #endif
     need_redock=GetPrivateProfileInt(AVS_SECTION,"cfg_docked",0,INI_FILE);
