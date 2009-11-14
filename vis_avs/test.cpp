@@ -172,7 +172,7 @@ int WINAPI WinMain(
 		DDraw_Exit(0);
 	}
 
-	avs_quit(0);
+	avs_quit();
 	DDraw_Quit();
 	return 0;
 }

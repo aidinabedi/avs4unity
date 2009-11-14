@@ -176,7 +176,21 @@ int avs_render(void* colors)
 	return 0;
 }
 
-void avs_quit(int save)
+void avs_save_present()
+{
+	if (g_render_effects)
+	{
+		std::string file = g_init_path;
+#ifdef LASER
+		file += "vis_avs_laser.dat";
+#else
+		file += "vis_avs.dat";
+#endif
+		g_render_effects->__SavePreset(file.c_str());
+	}
+}
+
+void avs_quit()
 {
 #define DS(x) 
   //MessageBox(this_mod->hwndParent,x,"AVS Debug",MB_OK)
@@ -197,7 +211,7 @@ void avs_quit(int save)
 		//DS("Calling cfgwnd_destroy\n");
 		//CfgWnd_Destroy();
 		DS("Calling render_quit\n");
-		Render_Quit(g_init_path.c_str(), save);
+		Render_Quit();
 
 		DS("Calling wnd_quit\n");
 		Wnd_Quit(g_init_path.c_str());

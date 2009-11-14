@@ -31,7 +31,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 extern "C" {
 	DLLEXPORT int avs_init(const char* path, int width, int height);
-	DLLEXPORT void avs_quit(int save);
+	DLLEXPORT void avs_quit();
 
 	DLLEXPORT int avs_render(void* colors);
 	DLLEXPORT int avs_resize(int width, int height);
@@ -39,4 +39,5 @@ extern "C" {
 	DLLEXPORT void avs_next_preset();
 	DLLEXPORT void avs_previous_preset();
 	DLLEXPORT void avs_random_preset();
+	DLLEXPORT void avs_save_preset();
 }
