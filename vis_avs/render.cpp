@@ -112,21 +112,10 @@ void Render_Init(const char* path)
   }
 }
 
-void Render_Quit(const char* path, int save)
+void Render_Quit()
 {
   if (g_render_transition) delete g_render_transition;
   g_render_transition=NULL;
-	if (g_render_effects)
-  {
-		std::string file = path? path:"";
-#ifdef LASER
-		file += "vis_avs_laser.dat";
-#else
-		file += "vis_avs.dat";
-#endif
-
-     if (save) g_render_effects->__SavePreset(file.c_str());
-	}
 
   if (g_render_effects) delete g_render_effects;
   g_render_effects=NULL;
