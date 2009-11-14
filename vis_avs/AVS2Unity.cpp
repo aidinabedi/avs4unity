@@ -166,7 +166,7 @@ int avs_resize(int width, int height)
 	return 0;
 }
 
-int avs_render(float* colors)
+int avs_render(void* colors)
 {
 	if (waitToReady()) return 1;
 
