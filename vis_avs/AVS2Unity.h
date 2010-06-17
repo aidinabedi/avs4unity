@@ -30,7 +30,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define DLLEXPORT __declspec( dllexport )
 
 extern "C" {
-	DLLEXPORT int avs_init(const char* path, int width, int height);
+	DLLEXPORT int avs_init(const char* path, int width, int height, int randomizeIfNoLoopback);
 	DLLEXPORT void avs_quit();
 
 	DLLEXPORT int avs_render(void* colors);
@@ -40,4 +40,7 @@ extern "C" {
 	DLLEXPORT void avs_previous_preset();
 	DLLEXPORT void avs_random_preset();
 	DLLEXPORT void avs_save_preset();
+
+	DLLEXPORT int avs_get_random_input();
+	DLLEXPORT void avs_set_random_input(int enable);
 }

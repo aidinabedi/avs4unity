@@ -21,7 +21,6 @@ int resize(HWND hwnd)
 	int height = r.bottom-r.top;
 
 	DDraw_Resize(width, height, 0);
-	avs_resize(width, height);
 
 	char title[1024] = {0};
 	_snprintf(title, sizeof(title)-1, "AVS2Unity %dx%d", width, height);
@@ -49,7 +48,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         break;
 		case WM_SYSKEYDOWN:
 		case WM_KEYDOWN:
-		  if (wParam == VK_SPACE)
+		  if (wParam == 'R')
+			avs_set_random_input(1 - avs_get_random_input());
+		  else if (wParam == VK_SPACE)
 			avs_random_preset();
 		  else if (wParam==VK_LEFT)
 			avs_next_preset();
@@ -140,7 +141,7 @@ int WINAPI WinMain(
 	DDraw_Init(hwnd);
 	RECT r;
 	GetClientRect(hwnd,&r);
-	avs_init("", r.right-r.left, r.bottom-r.top);
+	avs_init("", r.right-r.left, r.bottom-r.top, 0);
 	resize(hwnd);
 
 	//printf("loop ...\n");
@@ -163,7 +164,13 @@ int WINAPI WinMain(
 		Sleep(mod.delayMs);
 		
 		DDraw_Enter(&w,&h,&fb,&fb2);
-		if (pixels.size() != w*h*4) pixels.resize(w*h*4);
+
+		if (pixels.size() != w*h*4)
+		{
+			pixels.resize(w*h*4);
+			avs_resize(w, h);
+		}
+
 		avs_render(&pixels[0]);
 
 		for (i = 0; i < pixels.size(); i++)
