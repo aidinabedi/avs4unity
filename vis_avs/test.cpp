@@ -13,7 +13,7 @@
 
 const char g_szClassName[] = "myWindowClass";
 
-int resize(HWND hwnd)
+void resize(HWND hwnd)
 {
 	RECT r;
 	GetClientRect(hwnd,&r);
@@ -21,11 +21,6 @@ int resize(HWND hwnd)
 	int height = r.bottom-r.top;
 
 	DDraw_Resize(width, height, 0);
-
-	char title[1024] = {0};
-	_snprintf(title, sizeof(title)-1, "AVS2Unity %dx%d", width, height);
-	SetWindowText(hwnd, title);
-	return 0;
 }
 
 
@@ -137,20 +132,19 @@ int WINAPI WinMain(
 		NULL, // userData
 	};
 
-	//printf("init...\n");
 	DDraw_Init(hwnd);
 	RECT r;
 	GetClientRect(hwnd,&r);
 	avs_init("", r.right-r.left, r.bottom-r.top, 0);
+
 	resize(hwnd);
 
-	//printf("loop ...\n");
-    // Step 3: The Message Loop
 	int w, h, i;
 	int *fb, *fb2;
 	MSG msg;
 	bool exitLoop = false;
 	std::vector<float> pixels;
+	char title[1024] = {0};
 
 	while (!exitLoop)
 	{
@@ -177,6 +171,9 @@ int WINAPI WinMain(
 			((unsigned char*) fb)[i] = (unsigned char) (pixels[i] * 255);
 
 		DDraw_Exit(0);
+
+		_snprintf(title, sizeof(title)-1, "AVS2Unity %dx%d%s", w, h, avs_get_random_input()? " (randomize input)":"");
+		SetWindowText(hwnd, title);
 	}
 
 	avs_quit();

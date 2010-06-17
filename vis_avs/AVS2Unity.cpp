@@ -149,7 +149,7 @@ int avs_resize(int width, int height)
 	{
 		g_frameresultf[i] = 0;
 		g_frameresultf[i+1] = 0;
-		g_frameresultf[i+2] = 1;
+		g_frameresultf[i+2] = 0;
 		g_frameresultf[i+3] = 1;
 	}
 
