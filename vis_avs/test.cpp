@@ -97,7 +97,7 @@ int WINAPI WinMain(
     hwnd = CreateWindowEx(
         WS_EX_CLIENTEDGE,
         g_szClassName,
-        "The title of my window",
+        "",
         WS_OVERLAPPEDWINDOW,
         CW_USEDEFAULT, CW_USEDEFAULT, 640, 480,
         NULL, NULL, hInstance, NULL);
@@ -172,7 +172,7 @@ int WINAPI WinMain(
 
 		DDraw_Exit(0);
 
-		_snprintf(title, sizeof(title)-1, "AVS2Unity %dx%d%s", w, h, avs_get_random_input()? " (randomize input)":"");
+		_snprintf(title, sizeof(title)-1, "Playdoki Visualizer Engine %dx%d%s", w, h, avs_get_random_input()? " (randomize input)":"");
 		SetWindowText(hwnd, title);
 	}
 
